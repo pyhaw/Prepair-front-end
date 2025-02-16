@@ -33,6 +33,18 @@ You can start editing the page by modifying `app/page.js`. The page auto-updates
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+Install Additional Dependencies
+
+After the initial setup, install the additional dependencies required for UI components and functionality:
+
+```bash
+npm install @radix-ui/react-dropdown-menu shadcn-ui clsx lucide-react 
+```
+if shadcn-ui is not recognized, install it globally:
+```bash
+npm install -g shadcn-ui
+npx shadcn-ui init
+```
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
