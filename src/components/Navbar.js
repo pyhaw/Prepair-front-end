@@ -55,15 +55,15 @@ const Navbar = () => {
 
         {/* Right Section: Navigation Buttons */}
         <div className="hidden md:flex space-x-4">
-          <Button variant="outline" className="text-lg px-6 py-3" asChild>
+          <Button variant="outline" className="text-lg px-6 py-3" aschild="true">
           <Link href="/discussion">
                 Discussion
             </Link>
           </Button>
-          <Button variant="outline" className="text-lg px-6 py-3" asChild>
+          <Button variant="outline" className="text-lg px-6 py-3" aschild="true">
             <Link href="#">Register</Link>
           </Button>
-          <Button variant="outline" className="text-lg px-6 py-3" asChild>
+          <Button variant="outline" className="text-lg px-6 py-3" aschild="true">
             <Link href="#">Login</Link>
           </Button>
           <Button className="bg-orange-500 text-white hover:bg-orange-600 text-lg px-6 py-3" asChild>
