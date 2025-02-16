@@ -56,7 +56,9 @@ const Navbar = () => {
         {/* Right Section: Navigation Buttons */}
         <div className="hidden md:flex space-x-4">
           <Button variant="outline" className="text-lg px-6 py-3" asChild>
-            <Link href="#">Discussion</Link>
+          <Link href="/discussion">
+                Discussion
+            </Link>
           </Button>
           <Button variant="outline" className="text-lg px-6 py-3" asChild>
             <Link href="#">Register</Link>
