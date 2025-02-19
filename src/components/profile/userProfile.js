@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 
 const ProfilePage = () => {
+  const userId = 1;
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -25,12 +26,29 @@ const ProfilePage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted", formData);
-    // Here you can add your backend submission logic
-  };
+    try {
+      const response = await fetch(
+        `http://localhost:5001/api/userProfile/${userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
+      if (response.ok) {
+        alert("Profile updated successfully!");
+      } else {
+        alert("Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
   return (
     <section className="pt-32 text-center px-6">
       <h2 className="text-4xl font-bold text-gray-900">Profile Page</h2>
