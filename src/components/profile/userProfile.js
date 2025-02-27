@@ -1,8 +1,10 @@
 "use client";
-import React, { useState } from "react";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // For redirecting users
 
 const ProfilePage = () => {
-  const userId = 1;
+  const [isLoggedIn, setIsLoggedIn] = useState(null); // Check login state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,45 +20,99 @@ const ProfilePage = () => {
     duration: "",
   });
 
+  const router = useRouter();
+
+  // ✅ Check login status
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setIsLoggedIn(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:5001/api/auth/verify", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          setIsLoggedIn(true);
+        } else {
+          console.warn("Invalid token. Logging out...");
+          localStorage.removeItem("token");
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error("Error verifying token:", error);
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  // ✅ Handle form input change
   const handleChange = (e) => {
-    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [e.target.name]: e.target.value,
     });
   };
 
+  // ✅ Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch(
-        `http://localhost:5001/api/userProfile/${userId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+    
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    const token = localStorage.getItem("token");
 
-      if (response.ok) {
-        alert("Profile updated successfully!");
-      } else {
-        alert("Failed to update profile");
+    try {
+      const response = await fetch(`${API_URL}/api/userProfile/1`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
       }
+
+      alert("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
+      alert("Failed to update profile.");
     }
   };
+
+  // ✅ Show loading message while checking authentication
+  if (isLoggedIn === null) {
+    return <p className="text-center text-lg mt-10">Checking authentication...</p>;
+  }
+
+  // ✅ Show login message if user is not authenticated
+  if (!isLoggedIn) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Please Log in first to view your profile page
+        </h1>
+      </div>
+    );
+  }
+
+  // ✅ Render profile page when logged in
   return (
     <section className="pt-32 text-center px-6">
       <h2 className="text-4xl font-bold text-gray-900">Profile Page</h2>
       <form className="mt-8 max-w-xl mx-auto" onSubmit={handleSubmit}>
         <div className="profile-section">
-          <h3 className="text-xl font-bold text-gray-800">
-            Personal Information
-          </h3>
+          <h3 className="text-xl font-bold text-gray-800">Personal Information</h3>
           <input
             type="text"
             name="name"
@@ -84,9 +140,7 @@ const ProfilePage = () => {
         </div>
 
         <div className="profile-section mt-6">
-          <h3 className="text-xl font-bold text-gray-800">
-            Professional Information
-          </h3>
+          <h3 className="text-xl font-bold text-gray-800">Professional Information</h3>
           <input
             type="text"
             name="jobTitle"

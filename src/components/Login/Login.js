@@ -1,10 +1,13 @@
-"use client";
+"use client";  // ✅ Fix: Ensure this is the first line
 
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // Import Next.js router
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const Login = () => {
+  const router = useRouter(); // ✅ Initialize Next.js Router
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,9 +17,38 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Logging in:", formData);
+
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    console.log("Submitting to:", `${API_URL}/api/login`);
+
+    try {
+      const response = await fetch(`${API_URL}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Login Success:", data);
+
+      // ✅ Store the token for future authentication
+      localStorage.setItem("token", data.token);
+
+      // ✅ Redirect to /discussion after successful login
+      router.push("/discussion");
+
+    } catch (error) {
+      console.error("Login Error:", error);
+      alert("Failed to Login. Please try again.");
+    }
   };
 
   return (

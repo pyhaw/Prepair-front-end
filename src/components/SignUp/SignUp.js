@@ -26,10 +26,40 @@ const SignUp = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signing up:", formData);
+    
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    
+    console.log("Submitting to:", `${API_URL}/api/register`);
+    console.log("Form Data:", formData);
+  
+    try {
+      const response = await fetch(`${API_URL}/api/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log("Signup Success:", data);
+      
+      // Redirect or show success message
+      alert("Sign Up Successful! Redirecting...");
+      window.location.href = "/LoginPage"; // Redirect to login
+  
+    } catch (error) {
+      console.error("Signup Error:", error);
+      alert("Failed to Sign Up. Please try again.");
+    }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-800">
