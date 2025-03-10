@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // For redirecting users
+import { useRouter } from "next/navigation";
 
 const ProfilePage = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(null); // Check login state
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const [isLoggedIn, setIsLoggedIn] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,39 +24,86 @@ const ProfilePage = () => {
 
   const router = useRouter();
 
-  // ✅ Check login status
+  // Check login status and fetch user data
   useEffect(() => {
-    const checkLoginStatus = async () => {
+    const checkLoginAndFetchData = async () => {
       const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      alert(`User ID from localStorage: ${userId}`);
 
-      if (!token) {
+      if (!token || !userId) {
         setIsLoggedIn(false);
+        setIsLoading(false);
         return;
       }
 
       try {
-        const response = await fetch("http://localhost:5001/api/auth/verify", {
+        // Verify token
+        const authResponse = await fetch(`${API_URL}/api/auth/verify`, {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.ok) {
-          setIsLoggedIn(true);
-        } else {
+        if (!authResponse.ok) {
           console.warn("Invalid token. Logging out...");
           localStorage.removeItem("token");
           setIsLoggedIn(false);
+          setIsLoading(false);
+          return;
         }
+
+        setIsLoggedIn(true);
+
+        // Fetch user profile data
+        try {
+          const profileResponse = await fetch(
+            `${API_URL}/api/userProfile/${userId}`,
+            {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          if (profileResponse.ok) {
+            const userData = await profileResponse.json();
+
+            // Update form with existing user data
+            setFormData((prevData) => ({
+              ...prevData,
+              name: userData.name || "",
+              email: userData.email || "",
+              phone: userData.phone || "",
+              jobTitle: userData.jobTitle || "",
+              company: userData.company || "",
+              experience: userData.experience || "",
+              skills: userData.skills || "",
+              degree: userData.degree || "",
+              university: userData.university || "",
+              graduationYear: userData.graduationYear || "",
+              previousRole: userData.previousRole || "",
+              duration: userData.duration || "",
+            }));
+          } else {
+            console.log("No existing profile data found or not yet created");
+            // Keep default empty values as placeholders
+          }
+        } catch (profileError) {
+          console.error("Error fetching profile:", profileError);
+          // Continue with empty form data as fallback
+        }
+
+        setIsLoading(false);
       } catch (error) {
-        console.error("Error verifying token:", error);
+        console.error("Error during authentication check:", error);
         setIsLoggedIn(false);
+        setIsLoading(false);
       }
     };
 
-    checkLoginStatus();
+    checkLoginAndFetchData();
   }, []);
 
-  // ✅ Handle form input change
+  // Handle form input change
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -62,15 +111,18 @@ const ProfilePage = () => {
     });
   };
 
-  // ✅ Handle form submission
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    setIsLoading(true);
+
     const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
 
     try {
-      const response = await fetch(`${API_URL}/api/userProfile/1`, {
+      const endpoint = `${API_URL}/api/userProfile/${userId}`;
+
+      const response = await fetch(endpoint, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -78,6 +130,7 @@ const ProfilePage = () => {
         },
         body: JSON.stringify(formData),
       });
+      console.log(userId);
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
@@ -86,33 +139,49 @@ const ProfilePage = () => {
       alert("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile.");
+      alert("Failed to update profile. Please try again later.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // ✅ Show loading message while checking authentication
-  if (isLoggedIn === null) {
-    return <p className="text-center text-lg mt-10">Checking authentication...</p>;
-  }
-
-  // ✅ Show login message if user is not authenticated
-  if (!isLoggedIn) {
+  // Show loading message while checking authentication or loading data
+  if (isLoggedIn === null || isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Please Log in first to view your profile page
-        </h1>
+        <p className="text-center text-lg">Loading profile data...</p>
       </div>
     );
   }
 
-  // ✅ Render profile page when logged in
+  // Show login message if user is not authenticated
+  if (!isLoggedIn) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            Please Log in first to view your profile page
+          </h1>
+          <button
+            onClick={() => router.push("/login")}
+            className="bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Render profile page when logged in
   return (
     <section className="pt-32 text-center px-6">
       <h2 className="text-4xl font-bold text-gray-900">Profile Page</h2>
       <form className="mt-8 max-w-xl mx-auto" onSubmit={handleSubmit}>
         <div className="profile-section">
-          <h3 className="text-xl font-bold text-gray-800">Personal Information</h3>
+          <h3 className="text-xl font-bold text-gray-800">
+            Personal Information
+          </h3>
           <input
             type="text"
             name="name"
@@ -140,7 +209,9 @@ const ProfilePage = () => {
         </div>
 
         <div className="profile-section mt-6">
-          <h3 className="text-xl font-bold text-gray-800">Professional Information</h3>
+          <h3 className="text-xl font-bold text-gray-800">
+            Professional Information
+          </h3>
           <input
             type="text"
             name="jobTitle"
@@ -229,9 +300,12 @@ const ProfilePage = () => {
 
         <button
           type="submit"
-          className="mt-6 bg-orange-500 text-white py-3 px-6 rounded-lg text-lg hover:bg-orange-600 transition"
+          disabled={isLoading}
+          className={`mt-6 ${
+            isLoading ? "bg-gray-400" : "bg-orange-500 hover:bg-orange-600"
+          } text-white py-3 px-6 rounded-lg text-lg transition`}
         >
-          Submit
+          {isLoading ? "Saving..." : "Save Profile"}
         </button>
       </form>
     </section>

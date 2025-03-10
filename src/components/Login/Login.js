@@ -1,4 +1,4 @@
-"use client";  // ✅ Fix: Ensure this is the first line
+"use client"; // ✅ Fix: Ensure this is the first line
 
 import { useState } from "react";
 import { useRouter } from "next/navigation"; // Import Next.js router
@@ -40,11 +40,15 @@ const Login = () => {
       console.log("Login Success:", data);
 
       // ✅ Store the token for future authentication
+      // ✅ Ensure userId is correctly stored and retrieved
       localStorage.setItem("token", data.token);
+      localStorage.setItem("userId", data.user);
+      // ✅ Retrieve it from localStorage before using it
+      const userId = localStorage.getItem("userId");
+      alert(`User ID from localStorage: ${userId}`);
 
       // ✅ Redirect to /discussion after successful login
       router.push("/discussion");
-
     } catch (error) {
       console.error("Login Error:", error);
       alert("Failed to Login. Please try again.");
