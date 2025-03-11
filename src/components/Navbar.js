@@ -67,7 +67,7 @@ const Navbar = () => {
             <Link href="#">Login</Link>
           </Button>
           <Button className="bg-orange-500 text-white hover:bg-orange-600 text-lg px-6 py-3" asChild>
-            <Link href="#">Make a Request</Link>
+            <Link href="/make-request">Make a Request</Link>
           </Button>
         </div>
 
