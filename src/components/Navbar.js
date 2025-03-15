@@ -51,10 +51,29 @@ const Navbar = () => {
   }, []);
 
   // ✅ Logout function
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // Remove token
-    setIsLoggedIn(false); // Update state
-    router.push("/LoginPage"); // Redirect to login
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+  
+      if (!token) {
+        console.warn("No token found. Already logged out.");
+        return;
+      }
+  
+      // Call the logout endpoint
+      await fetch("http://localhost:5001/api/auth/logout", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      // Clear the token from local storage
+      localStorage.removeItem("token");
+  
+      // Redirect to the login page
+      window.location.href = "/LoginPage";
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
   };
 
   return (

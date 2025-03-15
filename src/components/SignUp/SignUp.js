@@ -3,14 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
-    role: "",
+    role: "admin",
   });
+
+  const [error, setError] = useState(""); // State to manage error messages
+  const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,12 +22,10 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setError(""); // Clear any previous errors
+  
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-
-    console.log("Submitting to:", `${API_URL}/api/register`);
-    console.log("Form Data:", formData);
-
+  
     try {
       const response = await fetch(`${API_URL}/api/register`, {
         method: "POST",
@@ -32,20 +34,24 @@ const SignUp = () => {
         },
         body: JSON.stringify(formData),
       });
-
+  
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || "An unknown error occurred");
       }
-
+  
       const data = await response.json();
       console.log("Signup Success:", data);
-
-      // Redirect or show success message
-      alert("Sign Up Successful! Redirecting...");
-      router.push("/LoginPage");
+  
+      // Store the token for future authentication
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userId", data.userId);
+  
+      // Redirect to /discussion after successful registration
+      router.push("/discussion");
     } catch (error) {
-      console.error("Signup Error:", error);
-      alert("Failed to Sign Up. Please try again.");
+      console.error("Signup Error:", error.message);
+      setError(error.message); // Set the error message to display below the form
     }
   };
 
@@ -55,6 +61,12 @@ const SignUp = () => {
         <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">
           Sign Up
         </h2>
+
+        {/* Error Message */}
+        {error && (
+          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"

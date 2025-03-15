@@ -13,12 +13,15 @@ const Login = () => {
     password: "",
   });
 
+  const [error, setError] = useState(""); // State to manage error messages
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Clear any previous errors
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
     console.log("Submitting to:", `${API_URL}/api/login`);
@@ -33,25 +36,23 @@ const Login = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        // Parse the error response from the backend
+        const errorData = await response.json();
+        throw new Error(errorData.error || "An unknown error occurred");
       }
 
       const data = await response.json();
       console.log("Login Success:", data);
 
       // ✅ Store the token for future authentication
-      // ✅ Ensure userId is correctly stored and retrieved
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.user);
-      // ✅ Retrieve it from localStorage before using it
-      const userId = localStorage.getItem("userId");
-      alert(`User ID from localStorage: ${userId}`);
 
       // ✅ Redirect to /discussion after successful login
       router.push("/discussion");
     } catch (error) {
-      console.error("Login Error:", error);
-      alert("Failed to Login. Please try again.");
+      console.error("Login Error:", error.message);
+      setError(error.message); // Set the error message to display below the form
     }
   };
 
@@ -61,6 +62,12 @@ const Login = () => {
         <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">
           Login
         </h2>
+
+        {/* Error Message */}
+        {error && (
+          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
