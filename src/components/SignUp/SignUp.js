@@ -25,7 +25,7 @@ const SignUp = () => {
     setError(""); // Clear any previous errors
   
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-  
+
     try {
       const response = await fetch(`${API_URL}/api/register`, {
         method: "POST",
