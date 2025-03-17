@@ -17,7 +17,7 @@
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",
     "react-select": "^5.10.0",
-    "shadcn-ui": "^0.9.4",
+    "shadcn-ui": "^0.9.5",
     "tailwind-variants": "^0.3.1"
   },
   "devDependencies": {
