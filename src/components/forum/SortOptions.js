@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -7,30 +6,35 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-const SortOptions = ({ setSortBy }) => {
-  const [selectedSort, setSelectedSort] = useState("Newest");
+const SortOptions = ({ setSortBy, sortBy = "newest" }) => {
+  const sortOptions = {
+    "newest": "Newest",
+    "popular": "Popular",
+    "trending": "Trending"
+  };
 
   const handleSortChange = (value) => {
     setSortBy(value);
-    setSelectedSort(value);
   };
 
   return (
-    <div className="relative inline-block text-left mb-4">
+    <div className="relative inline-block text-left">
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center justify-between bg-white border border-gray-300 px-4 py-2 rounded-lg shadow-md text-gray-700 text-lg hover:bg-gray-100 focus:ring-2 focus:ring-orange-500">
-          {selectedSort} <ChevronDown size={18} className="ml-2 text-gray-500" />
+        <DropdownMenuTrigger className="flex items-center justify-between bg-white border border-gray-300 px-4 py-2 rounded-lg shadow-sm text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-orange-500">
+          {sortOptions[sortBy]} <ChevronDown size={16} className="ml-2 text-gray-500" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="bg-white shadow-lg rounded-md border mt-1 w-48">
-          <DropdownMenuItem className="cursor-pointer px-4 py-2 hover:bg-gray-100 text-gray-700" onClick={() => handleSortChange("Newest")}>
-            Newest
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer px-4 py-2 hover:bg-gray-100 text-gray-700" onClick={() => handleSortChange("Popular")}>
-            Popular
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer px-4 py-2 hover:bg-gray-100 text-gray-700" onClick={() => handleSortChange("Trending")}>
-            Trending
-          </DropdownMenuItem>
+        <DropdownMenuContent className="bg-white shadow-lg rounded-md border mt-1 w-36">
+          {Object.entries(sortOptions).map(([key, label]) => (
+            <DropdownMenuItem 
+              key={key}
+              className={`cursor-pointer px-4 py-2 hover:bg-gray-100 ${
+                sortBy === key ? "text-orange-500 font-medium" : "text-gray-700"
+              }`} 
+              onClick={() => handleSortChange(key)}
+            >
+              {label}
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
