@@ -48,7 +48,7 @@ const SignUp = () => {
       localStorage.setItem("userId", data.userId);
   
       // Redirect to /discussion after successful registration
-      router.push("/discussion");
+      window.location.href = "/discussion";
     } catch (error) {
       console.error("Signup Error:", error.message);
       setError(error.message); // Set the error message to display below the form
