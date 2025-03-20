@@ -115,6 +115,15 @@ const Navbar = () => {
                 <Link href="/profilePage">View Profile</Link>
               </Button>
 
+              {/* ✅ My Job Postings Button */}
+              <Button
+                variant="ghost"
+                className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
+                asChild
+              >
+                <Link href="/my-job-postings">My Job Postings</Link>
+              </Button>
+
               {/* ✅ Logout Button */}
               <Button
                 onClick={handleLogout}
@@ -198,6 +207,16 @@ const Navbar = () => {
                 >
                   View Profile
                 </Link>
+
+                {/* ✅ My Job Postings Button for Mobile */}
+                <Link
+                  href="/my-job-postings"
+                  className="text-gray-700 hover:text-gray-900 text-lg font-medium py-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  My Job Postings
+                </Link>
+
                 <button
                   onClick={handleLogout}
                   className="text-red-500 hover:text-red-700 text-left text-lg font-medium py-2"
