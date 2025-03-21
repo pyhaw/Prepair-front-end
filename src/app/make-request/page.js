@@ -91,6 +91,8 @@ export default function MakeRequest() {
         {message && <p className="text-green-600 mt-2">{message}</p>}
         {error && <p className="text-red-500 mt-2">{error}</p>}
 
+        {/* Upload Media */ }
+
         <div className="mt-4">
           <label className="block font-semibold mb-1 text-black">Repair Title</label>
           <input

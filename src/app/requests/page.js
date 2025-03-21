@@ -2,10 +2,11 @@
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function Requests() {
+  const router = useRouter();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,12 +37,11 @@ export default function Requests() {
 
         const formattedRequests = data.map((job) => ({
           id: job.id,
-          category: job.title,
+          title: job.title,
           location: job.location,
           urgency: job.urgency,
-          budget: job.min_budget && job.max_budget 
-            ? `$${job.min_budget} - $${job.max_budget}`
-            : "N/A",
+          min_budget: job.min_budget,
+          max_budget: job.max_budget,
           description: job.description,
         }));
 
@@ -56,6 +56,19 @@ export default function Requests() {
     fetchRequests();
   }, []);
 
+  const handleViewDetails = (request) => {
+    const queryParams = new URLSearchParams({
+      title: request.title,
+      description: request.description,
+      location: request.location,
+      urgency: request.urgency,
+      min_budget: request.min_budget || "",
+      max_budget: request.max_budget || "",
+    }).toString();
+
+    router.push(`/requests/details?${queryParams}`);
+  };
+
   return (
     <div>
       <Navbar />
@@ -68,14 +81,17 @@ export default function Requests() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {requests.map((request) => (
             <div key={request.id} className="border p-4 rounded shadow-md bg-gray-100">
-              <h3 className="text-xl font-bold text-black">{request.category}</h3>
+              <h3 className="text-xl font-bold text-black">{request.title}</h3>
               <p className="text-black">{request.description}</p>
               <p className="text-black"><strong>📍 Location:</strong> {request.location}</p>
               <p className="text-black"><strong>⚡ Urgency:</strong> {request.urgency}</p>
-              <p className="text-black"><strong>💰 Budget:</strong> {request.budget}</p>
-              <Link href={`/requests/${request.id}`} className="mt-2 bg-orange-500 text-white px-4 py-2 rounded w-full block text-center">
+              <p className="text-black"><strong>💰 Budget:</strong> {request.min_budget && request.max_budget ? `$${request.min_budget} - $${request.max_budget}` : "N/A"}</p>
+              <button
+                className="mt-2 bg-orange-500 text-white px-4 py-2 rounded w-full block text-center"
+                onClick={() => handleViewDetails(request)}
+              >
                 View Details
-              </Link>
+              </button>
             </div>
           ))}
         </div>
