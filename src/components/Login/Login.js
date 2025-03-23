@@ -87,6 +87,14 @@ const Login = () => {
             className="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 dark:text-white"
             required
           />
+
+          {/* Forgot Password Link */}
+          <div className="flex justify-start">
+            <Link href="/forgot-password" className="text-sm text-orange-500 hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
+
           <Button
             type="submit"
             className="w-full bg-orange-500 text-white hover:bg-orange-600 py-3"
@@ -94,6 +102,8 @@ const Login = () => {
             Login
           </Button>
         </form>
+
+        {/* Sign Up Link */}
         <p className="text-center text-gray-600 dark:text-gray-400 mt-4">
           Don't have an account?{" "}
           <Link href="/SignUpPage" className="text-orange-500 hover:underline">
