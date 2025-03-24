@@ -23,7 +23,7 @@ export default function RequestDetails() {
   return (
     <div>
       <Navbar />
-      <div className="max-w-4xl mx-auto mt-16 p-6">
+      <div className="max-w-4xl mx-auto mt-32 p-6">
         <h2 className="text-4xl font-bold text-black mb-6">Request Details</h2>
 
         <div className="bg-gray-100 p-6 rounded-lg shadow-md">
