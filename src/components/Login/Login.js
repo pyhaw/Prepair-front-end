@@ -47,6 +47,7 @@ const Login = () => {
       // ✅ Store the token for future authentication
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.user);
+      localStorage.setItem("role", data.role);
 
       // ✅ Redirect to /discussion after successful login
       router.push("/discussion");
