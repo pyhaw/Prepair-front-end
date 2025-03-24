@@ -163,6 +163,19 @@ export default function RequestDetails() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-400">
       <Navbar />
+      <div className="max-w-4xl mx-auto mt-32 p-6">
+        <h2 className="text-4xl font-bold text-black mb-6">Request Details</h2>
+
+        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
+          <div className="mb-4">
+            <label className="block font-semibold mb-1 text-black">Repair Title</label>
+            <input
+              type="text"
+              className="w-full border p-2 rounded text-black bg-white"
+              value={request.title}
+              readOnly
+            />
+          </div>
 
       <div className="flex-grow max-w-4xl mx-auto w-full mt-24 p-6">
         {error ? (
