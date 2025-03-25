@@ -2,8 +2,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+import axios from "axios";
+
 const ProfilePage = () => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
+
   const [isLoggedIn, setIsLoggedIn] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -19,7 +25,7 @@ const ProfilePage = () => {
     graduationYear: "",
     previousRole: "",
     duration: "",
-    profilePicture: null, // Add state for profile picture
+    profilePicture: ""
   });
   const [message, setMessage] = useState(""); // State to manage success/error messages
   const [previewImage, setPreviewImage] = useState(null); // State to preview the uploaded image
@@ -61,6 +67,7 @@ const ProfilePage = () => {
           );
           if (profileResponse.ok) {
             const userData = await profileResponse.json();
+            console.log(userData)
             // Update form with existing user data
             setFormData((prevData) => ({
               ...prevData,
@@ -104,62 +111,65 @@ const ProfilePage = () => {
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === "file") {
-      // Handle file upload for profile picture
       const file = files[0];
-      setFormData({ ...formData, profilePicture: file });
-      setPreviewImage(URL.createObjectURL(file)); // Preview the uploaded image
+      setPreviewImage(URL.createObjectURL(file));
+      uploadImageToCloudinary(file);
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
-  // Handle form submission
+  const uploadImageToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    if (!file || !(file instanceof File)) {
+      console.error("Invalid file selected", file);
+      setMessage("Please select a valid image file.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(CLOUDINARY_UPLOAD_URL, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      console.log(response)
+      setFormData((prev) => ({ ...prev, profilePicture: response.data.secure_url }));
+} catch (error) {
+  console.error("Cloudinary Upload Error:", error.response?.data || error.message);
+  setMessage(`Failed to upload image. ${error.response?.data?.error?.message || ""}`);
+}
+
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage(""); // Clear previous messages
+    setMessage("");
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
-
     try {
-      const endpoint = `${API_URL}/api/userProfile/${userId}`;
-      const formDataToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        formDataToSend.append(key, value);
-      });
-
-      const response = await fetch(endpoint, {
+      const response = await fetch(`${API_URL}/api/userProfile/${userId}`, {
         method: "PUT",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: formDataToSend, // Use FormData for file upload
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
-        // Parse the error response from the backend
         const errorData = await response.json();
         throw new Error(errorData.error || `Error: ${response.status}`);
       }
-
-      setMessage("Profile updated successfully!"); // Set success message
+      console.log(formData)
+      setMessage("Profile updated successfully!");
     } catch (error) {
-      console.error("Error updating profile:", error);
-      setMessage(`${error.message}`); // Set error message
+      setMessage(`${error.message}`);
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Show loading message while checking authentication or loading data
-  if (isLoggedIn === null || isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-center text-lg">Loading profile data...</p>
-      </div>
-    );
-  }
-
   // Show login message if user is not authenticated
   if (!isLoggedIn) {
     return (
@@ -201,27 +211,17 @@ const ProfilePage = () => {
       <div className="flex flex-col items-center mt-8">
         <label htmlFor="profilePicture" className="cursor-pointer">
           <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-            {previewImage ? (
-              <img
-                src={previewImage}
-                alt="Profile Preview"
-                className="w-full h-full object-cover"
-              />
+            {formData.profilePicture ? (
+              <img src={formData.profilePicture} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <span className="text-gray-500">Upload Photo</span>
             )}
           </div>
         </label>
-        <input
-          type="file"
-          id="profilePicture"
-          name="profilePicture"
-          accept="image/*"
-          onChange={handleChange}
-          className="hidden"
-        />
+        <input type="file" id="profilePicture" name="profilePicture" accept="image/*" onChange={handleChange} className="hidden" />
         <p className="text-sm text-gray-500 mt-2">Click to upload</p>
       </div>
+
 
       <form className="mt-8 max-w-xl mx-auto" onSubmit={handleSubmit}>
         <div className="profile-section">

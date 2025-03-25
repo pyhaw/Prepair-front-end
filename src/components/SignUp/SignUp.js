@@ -23,9 +23,9 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Clear any previous errors
-  
+
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-  
+
     try {
       const response = await fetch(`${API_URL}/api/register`, {
         method: "POST",
@@ -34,19 +34,19 @@ const SignUp = () => {
         },
         body: JSON.stringify(formData),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "An unknown error occurred");
       }
-  
+
       const data = await response.json();
       console.log("Signup Success:", data);
-  
+
       // Store the token for future authentication
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
-  
+
       // Redirect to /discussion after successful registration
       window.location.href = "/discussion";
     } catch (error) {

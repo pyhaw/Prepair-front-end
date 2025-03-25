@@ -17,7 +17,7 @@ export default function MakeRequest() {
   });
 
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [errorFields, setErrorFields] = useState({});
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -25,16 +25,30 @@ export default function MakeRequest() {
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     });
+    setErrorFields({ ...errorFields, [name]: false }); // Reset error on change
+  };
+
+  const validateFields = () => {
+    const errors = {};
+    Object.keys(formData).forEach((key) => {
+      if (key !== "notify" && !formData[key].trim()) {
+        errors[key] = true;
+      }
+    });
+    setErrorFields(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const submitRequest = async () => {
     setMessage("");
-    setError("");
+    if (!validateFields()) {
+      return;
+    }
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
     const token = localStorage.getItem("token");
     if (!token) {
-      setError("User not authenticated. Please log in.");
+      setErrorFields({ token: true });
       return;
     }
 
@@ -61,7 +75,6 @@ export default function MakeRequest() {
       });
 
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.error || "Failed to submit request");
       }
@@ -77,8 +90,9 @@ export default function MakeRequest() {
         maxBudget: "",
         notify: false,
       });
+      setErrorFields({});
     } catch (error) {
-      setError(error.message);
+      setMessage(error.message);
     }
   };
 
@@ -89,14 +103,17 @@ export default function MakeRequest() {
         <h2 className="text-4xl font-bold text-black">New Repair Request</h2>
 
         {message && <p className="text-green-600 mt-2">{message}</p>}
-        {error && <p className="text-red-500 mt-2">{error}</p>}
+
+        {Object.keys(errorFields).length > 0 && (
+          <p className="text-red-600">Please fill in all required fields.</p>
+        )}
 
         <div className="mt-4">
           <label className="block font-semibold mb-1 text-black">Repair Title</label>
           <input
             type="text"
             name="title"
-            className="w-full border p-2 rounded text-black bg-white"
+            className={`w-full border p-2 rounded text-black bg-white ${errorFields.title ? 'border-red-600 border-2' : 'border-gray-300'}`}
             placeholder="Enter repair title"
             value={formData.title}
             onChange={handleChange}
@@ -107,7 +124,7 @@ export default function MakeRequest() {
           <label className="block font-semibold mb-1 text-black">Issue Description</label>
           <textarea
             name="description"
-            className="w-full border p-2 rounded h-24 text-black bg-white"
+            className={`w-full border p-2 rounded h-24 text-black bg-white ${errorFields.description ? 'border-red-600 border-2' : 'border-gray-300'}`}
             placeholder="Describe your issue"
             value={formData.description}
             onChange={handleChange}
@@ -118,7 +135,7 @@ export default function MakeRequest() {
           <label className="block font-semibold mb-1 text-black">Select Location</label>
           <select
             name="location"
-            className="w-full border p-2 rounded text-black bg-white"
+            className={`w-full border p-2 rounded text-black bg-white ${errorFields.location ? 'border-red-600 border-2' : 'border-gray-300'}`}
             value={formData.location}
             onChange={handleChange}
           >
@@ -135,7 +152,7 @@ export default function MakeRequest() {
           <label className="block font-semibold mb-1 text-black">Urgency Level</label>
           <select
             name="urgency"
-            className="w-full border p-2 rounded text-black bg-white"
+            className={`w-full border p-2 rounded text-black bg-white ${errorFields.urgency ? 'border-red-600 border-2' : 'border-gray-300'}`}
             value={formData.urgency}
             onChange={handleChange}
           >
@@ -151,7 +168,7 @@ export default function MakeRequest() {
           <input
             type="date"
             name="date"
-            className="w-full border p-2 rounded text-black bg-white"
+            className={`w-full border p-2 rounded text-black bg-white ${errorFields.date ? 'border-red-600 border-2' : 'border-gray-300'}`}
             value={formData.date}
             onChange={handleChange}
           />
@@ -161,17 +178,18 @@ export default function MakeRequest() {
           <label className="block font-semibold mb-1 text-black">Budget Range</label>
           <div className="flex space-x-2">
             <input
-              type="text"
+              type="number"
               name="minBudget"
-              className="border p-2 rounded w-1/2 text-black bg-white"
+              className={`border p-2 rounded w-1/2 text-black bg-white ${errorFields.minBudget ? 'border-red-600 border-2' : 'border-gray-300'}`}
               placeholder="Min. $"
               value={formData.minBudget}
               onChange={handleChange}
             />
+            <span>-</span>
             <input
-              type="text"
+              type="number"
               name="maxBudget"
-              className="border p-2 rounded w-1/2 text-black bg-white"
+              className={`border-4 p-2 rounded w-1/2 text-black bg-white ${errorFields.maxBudget ? 'border-red-600 border-2' : 'border-gray-300'}`}
               placeholder="Max. $"
               value={formData.maxBudget}
               onChange={handleChange}
@@ -199,7 +217,6 @@ export default function MakeRequest() {
           </button>
         </div>
       </div>
-
       <Footer />
     </div>
   );
