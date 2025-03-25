@@ -89,13 +89,13 @@ const Navbar = () => {
         </div>
 
         {/* Right Section: Navigation Buttons */}
-
         <div className="hidden md:flex items-center space-x-4">
           <Button
             variant="ghost"
             className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
             asChild
           >
+
             <Link href="/activeJobs">Active Jobs</Link>
           </Button>
           <Button
