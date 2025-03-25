@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
@@ -26,7 +25,9 @@ export default function Requests() {
           process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
         const token = localStorage.getItem("token");
-        if (!token) throw new Error("User is not authenticated. Please log in.");
+        if (!token) {
+          throw new Error("User is not authenticated. Please log in.");
+        }
 
         const response = await fetch(`${API_URL}/api/job-postings`, {
           method: "GET",
@@ -36,7 +37,9 @@ export default function Requests() {
           },
         });
 
-        if (!response.ok) throw new Error("Failed to fetch job postings.");
+        if (!response.ok) {
+          throw new Error("Failed to fetch job postings.");
+        }
 
         const data = await response.json();
 
@@ -45,12 +48,8 @@ export default function Requests() {
           title: job.title,
           location: job.location,
           urgency: job.urgency,
-          minBudget: job.min_budget,
-          maxBudget: job.max_budget,
-          budget:
-            job.min_budget && job.max_budget
-              ? `$${job.min_budget} - $${job.max_budget}`
-              : "N/A",
+          min_budget: job.min_budget,
+          max_budget: job.max_budget,
           description: job.description,
         }));
 
@@ -67,30 +66,46 @@ export default function Requests() {
 
   const filteredRequests = requests.filter((req) => {
     const matchesSearch =
-      req.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      req.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (req.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        req.description?.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesLocation =
-      !filters.location || req.location.toLowerCase() === filters.location.toLowerCase();
+      !filters.location || req.location?.toLowerCase() === filters.location.toLowerCase();
 
     const matchesUrgency =
-      !filters.urgency || req.urgency.toLowerCase() === filters.urgency.toLowerCase();
+      !filters.urgency || req.urgency?.toLowerCase() === filters.urgency.toLowerCase();
 
     const minBudget = parseFloat(filters.minBudget);
     const maxBudget = parseFloat(filters.maxBudget);
 
     const matchesBudget =
-      (!minBudget || req.maxBudget >= minBudget) &&
-      (!maxBudget || req.minBudget <= maxBudget);
+      (!minBudget || req.max_budget >= minBudget) &&
+      (!maxBudget || req.min_budget <= maxBudget);
 
     return matchesSearch && matchesLocation && matchesUrgency && matchesBudget;
   });
+
+  const handleViewDetails = (request) => {
+    const queryParams = new URLSearchParams({
+      id: request.id,
+      title: request.title,
+      description: request.description,
+      location: request.location,
+      urgency: request.urgency,
+      min_budget: request.min_budget || "",
+      max_budget: request.max_budget || "",
+    }).toString();
+
+    router.push(`/requests/details?${queryParams}`);
+  };
 
   return (
     <div>
       <Navbar />
       <div className="max-w-6xl mx-auto mt-32 p-6">
-        <h2 className="text-4xl font-bold mb-6 text-black">🔧 Open Repair Requests</h2>
+        <h2 className="text-4xl font-bold mb-6 text-black">
+          🔧 Open Repair Requests
+        </h2>
 
         <div className="mb-6 space-y-4">
           <input
@@ -147,34 +162,41 @@ export default function Requests() {
 
         {loading && <p className="text-black">Loading requests...</p>}
         {error && <p className="text-red-500">{error}</p>}
-        {filteredRequests.length === 0 && !loading && !error && (
-          <p className="text-black col-span-full text-center">
-            No matching repair requests found.
-          </p>
-        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRequests.map((request) => (
-            <div key={request.id} className="border p-4 rounded shadow-md bg-gray-100">
-              <h3 className="text-xl font-bold text-black">{request.category}</h3>
-              <p className="text-black">{request.description}</p>
-              <p className="text-black">
-                <strong>📍 Location:</strong> {request.location}
-              </p>
-              <p className="text-black">
-                <strong>⚡ Urgency:</strong> {request.urgency}
-              </p>
-              <p className="text-black">
-                <strong>💰 Budget:</strong> {request.budget}
-              </p>
-              <Link
-                href={`/requests/${request.id}`}
-                className="mt-2 bg-orange-500 text-white px-4 py-2 rounded w-full block text-center"
+          {filteredRequests.length === 0 && !loading && !error ? (
+            <p className="text-black col-span-full text-center">
+              No matching repair requests found.
+            </p>
+          ) : (
+            filteredRequests.map((request) => (
+              <div
+                key={request.id}
+                className="border p-4 rounded shadow-md bg-gray-100"
               >
-                View Details
-              </button>
-            </div>
-          ))}
+                <h3 className="text-xl font-bold text-black">{request.title}</h3>
+                <p className="text-black">{request.description}</p>
+                <p className="text-black">
+                  <strong>📍 Location:</strong> {request.location}
+                </p>
+                <p className="text-black">
+                  <strong>⚡ Urgency:</strong> {request.urgency}
+                </p>
+                <p className="text-black">
+                  <strong>💰 Budget:</strong>{" "}
+                  {request.min_budget && request.max_budget
+                    ? `$${request.min_budget} - $${request.max_budget}`
+                    : "N/A"}
+                </p>
+                <button
+                  className="mt-2 bg-orange-500 text-white px-4 py-2 rounded w-full block text-center"
+                  onClick={() => handleViewDetails(request)}
+                >
+                  View Details
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
       <Footer />
