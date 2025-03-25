@@ -418,11 +418,10 @@ export default function PostDetails() {
             <div className="flex flex-col items-center mr-4">
               <button
                 onClick={() => handleVote(post.id, "up")}
-                className={`p-1 rounded-full ${
-                  userVotes.post === "up"
-                    ? "bg-green-100 text-green-600"
-                    : "text-gray-400 hover:text-green-500"
-                }`}
+                className={`p-1 rounded-full ${userVotes.post === "up"
+                  ? "bg-green-100 text-green-600"
+                  : "text-gray-400 hover:text-green-500"
+                  }`}
               >
                 <ArrowUp size={24} />
               </button>
@@ -431,11 +430,10 @@ export default function PostDetails() {
               </span>
               <button
                 onClick={() => handleVote(post.id, "down")}
-                className={`p-1 rounded-full ${
-                  userVotes.post === "down"
-                    ? "bg-red-100 text-red-600"
-                    : "text-gray-400 hover:text-red-500"
-                }`}
+                className={`p-1 rounded-full ${userVotes.post === "down"
+                  ? "bg-red-100 text-red-600"
+                  : "text-gray-400 hover:text-red-500"
+                  }`}
               >
                 <ArrowDown size={24} />
               </button>
@@ -483,11 +481,10 @@ export default function PostDetails() {
                     <div className="flex flex-col items-center mr-4">
                       <button
                         onClick={() => handleVote(reply.id, "up", "reply")}
-                        className={`p-1 rounded-full ${
-                          userVotes[`reply_${reply.id}`] === "up"
-                            ? "bg-green-100 text-green-600"
-                            : "text-gray-400 hover:text-green-500"
-                        }`}
+                        className={`p-1 rounded-full ${userVotes[`reply_${reply.id}`] === "up"
+                          ? "bg-green-100 text-green-600"
+                          : "text-gray-400 hover:text-green-500"
+                          }`}
                       >
                         <ArrowUp size={18} />
                       </button>
@@ -496,11 +493,10 @@ export default function PostDetails() {
                       </span>
                       <button
                         onClick={() => handleVote(reply.id, "down", "reply")}
-                        className={`p-1 rounded-full ${
-                          userVotes[`reply_${reply.id}`] === "down"
-                            ? "bg-red-100 text-red-600"
-                            : "text-gray-400 hover:text-red-500"
-                        }`}
+                        className={`p-1 rounded-full ${userVotes[`reply_${reply.id}`] === "down"
+                          ? "bg-red-100 text-red-600"
+                          : "text-gray-400 hover:text-red-500"
+                          }`}
                       >
                         <ArrowDown size={18} />
                       </button>
@@ -577,9 +573,7 @@ export default function PostDetails() {
 
           {/* Reply Form */}
           <div className="mt-6">
-            <h3 className="text-xl font-semibold mb-3 text-black">
-              Add Your Reply
-            </h3>
+            <h3 className="text-xl font-semibold mb-3 text-black">Add Your Reply</h3>
             {replyError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                 {replyError}
