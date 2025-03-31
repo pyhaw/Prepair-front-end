@@ -45,12 +45,14 @@ export default function Requests() {
 
         const formattedRequests = data.map((job) => ({
           id: job.id,
+          client_id: job.client_id,
           title: job.title,
           location: job.location,
           urgency: job.urgency,
           min_budget: job.min_budget,
           max_budget: job.max_budget,
           description: job.description,
+          status: job.status,
         }));
 
         setRequests(formattedRequests);
@@ -66,14 +68,16 @@ export default function Requests() {
 
   const filteredRequests = requests.filter((req) => {
     const matchesSearch =
-      (req.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        req.description?.toLowerCase().includes(searchQuery.toLowerCase()));
+      req.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      req.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesLocation =
-      !filters.location || req.location?.toLowerCase() === filters.location.toLowerCase();
+      !filters.location ||
+      req.location?.toLowerCase() === filters.location.toLowerCase();
 
     const matchesUrgency =
-      !filters.urgency || req.urgency?.toLowerCase() === filters.urgency.toLowerCase();
+      !filters.urgency ||
+      req.urgency?.toLowerCase() === filters.urgency.toLowerCase();
 
     const minBudget = parseFloat(filters.minBudget);
     const maxBudget = parseFloat(filters.maxBudget);
@@ -88,12 +92,14 @@ export default function Requests() {
   const handleViewDetails = (request) => {
     const queryParams = new URLSearchParams({
       id: request.id,
+      client_id: request.client_id,
       title: request.title,
       description: request.description,
       location: request.location,
       urgency: request.urgency,
       min_budget: request.min_budget || "",
       max_budget: request.max_budget || "",
+      status: request.status,
     }).toString();
 
     router.push(`/requests/details?${queryParams}`);
@@ -120,7 +126,9 @@ export default function Requests() {
             <select
               className="w-full border p-2 rounded text-black"
               value={filters.location}
-              onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+              onChange={(e) =>
+                setFilters({ ...filters, location: e.target.value })
+              }
             >
               <option value="">All Locations</option>
               <option value="Central">Central</option>
@@ -133,7 +141,9 @@ export default function Requests() {
             <select
               className="w-full border p-2 rounded text-black"
               value={filters.urgency}
-              onChange={(e) => setFilters({ ...filters, urgency: e.target.value })}
+              onChange={(e) =>
+                setFilters({ ...filters, urgency: e.target.value })
+              }
             >
               <option value="">All Urgency Levels</option>
               <option value="Low">Low</option>
@@ -147,14 +157,18 @@ export default function Requests() {
                 placeholder="Min $"
                 className="w-1/2 border p-2 rounded text-black"
                 value={filters.minBudget}
-                onChange={(e) => setFilters({ ...filters, minBudget: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, minBudget: e.target.value })
+                }
               />
               <input
                 type="number"
                 placeholder="Max $"
                 className="w-1/2 border p-2 rounded text-black"
                 value={filters.maxBudget}
-                onChange={(e) => setFilters({ ...filters, maxBudget: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, maxBudget: e.target.value })
+                }
               />
             </div>
           </div>
@@ -169,33 +183,37 @@ export default function Requests() {
               No matching repair requests found.
             </p>
           ) : (
-            filteredRequests.map((request) => (
-              <div
-                key={request.id}
-                className="border p-4 rounded shadow-md bg-gray-100"
-              >
-                <h3 className="text-xl font-bold text-black">{request.title}</h3>
-                <p className="text-black">{request.description}</p>
-                <p className="text-black">
-                  <strong>📍 Location:</strong> {request.location}
-                </p>
-                <p className="text-black">
-                  <strong>⚡ Urgency:</strong> {request.urgency}
-                </p>
-                <p className="text-black">
-                  <strong>💰 Budget:</strong>{" "}
-                  {request.min_budget && request.max_budget
-                    ? `$${request.min_budget} - $${request.max_budget}`
-                    : "N/A"}
-                </p>
-                <button
-                  className="mt-2 bg-orange-500 text-white px-4 py-2 rounded w-full block text-center"
-                  onClick={() => handleViewDetails(request)}
+            filteredRequests.map((request) =>
+              request.status === "open" ? (
+                <div
+                  key={request.id}
+                  className="border p-4 rounded shadow-md bg-gray-100"
                 >
-                  View Details
-                </button>
-              </div>
-            ))
+                  <h3 className="text-xl font-bold text-black">
+                    {request.title}
+                  </h3>
+                  <p className="text-black">{request.description}</p>
+                  <p className="text-black">
+                    <strong>📍 Location:</strong> {request.location}
+                  </p>
+                  <p className="text-black">
+                    <strong>⚡ Urgency:</strong> {request.urgency}
+                  </p>
+                  <p className="text-black">
+                    <strong>💰 Budget:</strong>{" "}
+                    {request.min_budget && request.max_budget
+                      ? `$${request.min_budget} - $${request.max_budget}`
+                      : "N/A"}
+                  </p>
+                  <button
+                    className="mt-2 bg-orange-500 text-white px-4 py-2 rounded w-full block text-center"
+                    onClick={() => handleViewDetails(request)}
+                  >
+                    View Details
+                  </button>
+                </div>
+              ) : null
+            )
           )}
         </div>
       </div>

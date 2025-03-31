@@ -1,11 +1,7 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-
 export default function RequestDetails() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -19,10 +15,13 @@ export default function RequestDetails() {
   const [bids, setBids] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isBidSubmitted, setIsBidSubmitted] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Get request details from search params
-  const request = {
+  const [request, setRequest] = useState({
     id: searchParams.get("id") || "",
+    client_id: searchParams.get("client_id"),
     title: searchParams.get("title") || "N/A",
     description: searchParams.get("description") || "N/A",
     location: searchParams.get("location") || "N/A",
@@ -31,8 +30,8 @@ export default function RequestDetails() {
     min_budget: searchParams.get("min_budget") || "N/A",
     max_budget: searchParams.get("max_budget") || "N/A",
     notify: searchParams.get("notify") === "true",
-  };
-
+    jobStatus: searchParams.get("status") || "",
+  });
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
   // Fetch user data and token on component mount
@@ -48,10 +47,19 @@ export default function RequestDetails() {
         return;
       }
 
-      setUserRole(role || "");
-      setUserId(id || "");
+      setUserRole(role);
+      setUserId(id);
     }
   }, []);
+  useEffect(() => {
+    // This will run whenever userId changes
+    console.log("userId:", userId, typeof userId);
+    console.log(
+      "request.client_id:",
+      request.client_id,
+      typeof request.client_id
+    );
+  }, [userId]);
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -84,6 +92,7 @@ export default function RequestDetails() {
 
       const data = await response.json();
       setBids(data);
+      console.log(request.client_id);
     } catch (error) {
       console.error("Error fetching bids:", error);
       setError("Failed to load bids. Please try again later.");
@@ -96,6 +105,14 @@ export default function RequestDetails() {
   useEffect(() => {
     fetchBids();
   }, [request.id]);
+
+  useEffect(() => {
+    fetchBids();
+  }, [isBidSubmitted]);
+
+  useEffect(() => {
+    fetchBids();
+  }, [isCompleted]);
 
   // Check if user has already bid on this job
   const hasUserBid = bids.some(
@@ -160,10 +177,59 @@ export default function RequestDetails() {
       setIsSubmitting(false);
     }
   };
+
+  const handleAcceptBid = async (bid) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/api/accept-bids`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ bidId: bid.id, jobId: bid.job_posting_id }), // Include necessary bid data
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Bid accepted:", data); // Handle the response properly
+      setRequest((prev) => ({ ...prev, jobStatus: "in_progress" }));
+      setIsBidSubmitted(true);
+    } catch (error) {
+      console.error("Error accepting bid:", error); // Log errors for debugging
+    }
+  };
+
+  const handleCompleteBid = async (bid) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/api/complete-job`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ bidId: bid.id, jobId: bid.job_posting_id }), // Include necessary bid data
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Job completed:", data); // Handle the response properly
+      setIsCompleted(true);
+      setRequest((prev) => ({ ...prev, jobStatus: "completed" }));
+    } catch (error) {
+      console.error("Error completeing job:", error); // Log errors for debugging
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-400">
-      <Navbar />
-
       <div className="flex-grow max-w-4xl mx-auto w-full mt-24 p-6">
         {error ? (
           <div className="bg-red-100 text-red-800 p-4 rounded-lg mb-6">
@@ -214,12 +280,13 @@ export default function RequestDetails() {
                     Urgency Level
                   </label>
                   <div
-                    className={`p-3 rounded-md border ${request.urgency === "High"
+                    className={`p-3 rounded-md border ${
+                      request.urgency === "High"
                         ? "bg-red-50 border-red-200 text-red-700"
                         : request.urgency === "Medium"
-                          ? "bg-yellow-50 border-yellow-200 text-yellow-700"
-                          : "bg-green-50 border-green-200 text-green-700"
-                      }`}
+                        ? "bg-yellow-50 border-yellow-200 text-yellow-700"
+                        : "bg-green-50 border-green-200 text-green-700"
+                    }`}
                   >
                     {request.urgency}
                   </div>
@@ -281,6 +348,24 @@ export default function RequestDetails() {
                     readOnly
                   />
                 </div>
+                <div className="w-1/2">
+                  <div
+                    className={`w-full p-3 rounded-md text-center font-semibold border ${
+                      request.jobStatus === "completed"
+                        ? "bg-green-200 text-green-800 border-green-500"
+                        : request.jobStatus === "in_progress"
+                        ? "bg-blue-200 text-blue-800 border-blue-500"
+                        : request.jobStatus === "open"
+                        ? "bg-orange-200 text-orange-800 border-orange-500"
+                        : "bg-gray-200 text-gray-800 border-gray-500"
+                    }`}
+                  >
+                    Status:{" "}
+                    {request.jobStatus
+                      ? request.jobStatus.replace("_", " ")
+                      : "N/A"}
+                  </div>
+                </div>
 
                 <div className="flex items-center space-x-2 md:col-span-2">
                   <input
@@ -314,10 +399,11 @@ export default function RequestDetails() {
 
                     {bidMessage.text && (
                       <div
-                        className={`p-4 mb-4 rounded-md ${bidMessage.type === "success"
+                        className={`p-4 mb-4 rounded-md ${
+                          bidMessage.type === "success"
                             ? "bg-green-100 text-green-800 border border-green-200"
                             : "bg-red-100 text-red-800 border border-red-200"
-                          }`}
+                        }`}
                       >
                         {bidMessage.text}
                       </div>
@@ -426,18 +512,15 @@ export default function RequestDetails() {
 
                         {/* Bid status badge */}
                         <div
-                          className={`px-3 py-1 rounded-full text-sm ${bid.status === "accepted"
+                          className={`px-3 py-1 rounded-full text-sm ${
+                            bid.status === "accepted"
                               ? "bg-green-100 text-green-800"
                               : bid.status === "rejected"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
                         >
-                          {bid.status === "pending"
-                            ? "Pending"
-                            : bid.status === "accepted"
-                              ? "Accepted"
-                              : "Rejected"}
+                          {bid.status === "pending" ? "Pending" : "Accepted"}
                         </div>
                       </div>
 
@@ -451,15 +534,12 @@ export default function RequestDetails() {
                       )}
 
                       {/* Actions for client on their own job posting */}
-                      {userRole === "client" && bid.status === "pending" && (
+                      {bid.status === "pending" &&
+                      String(userId) === String(request.client_id) ? (
                         <div className="mt-4 pt-3 border-t border-gray-100 flex space-x-3">
                           <button
                             className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 transition duration-300"
-                            onClick={() =>
-                              alert(
-                                "Accept bid functionality to be implemented"
-                              )
-                            }
+                            onClick={() => handleAcceptBid(bid)}
                           >
                             Accept Bid
                           </button>
@@ -474,7 +554,27 @@ export default function RequestDetails() {
                             Message
                           </button>
                         </div>
-                      )}
+                      ) : bid.status === "accepted" &&
+                        request.jobStatus === "in_progress" ? (
+                        <div className="mt-4 pt-3 border-t border-gray-100 flex space-x-3">
+                          <button
+                            className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 transition duration-300"
+                            onClick={() => handleCompleteBid(bid)}
+                          >
+                            Mark as Completed
+                          </button>
+                          <button
+                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition duration-300"
+                            onClick={() =>
+                              alert(
+                                "Message bidder functionality to be implemented"
+                              )
+                            }
+                          >
+                            Message
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -511,7 +611,6 @@ export default function RequestDetails() {
           </>
         )}
       </div>
-      <Footer />
     </div>
   );
 }

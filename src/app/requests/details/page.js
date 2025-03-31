@@ -1,10 +1,13 @@
-import { Suspense } from "react";
-import RequestDetails from "@/components/Request/RequestDetails";
+import Request from "@/components/Request/RequestDetails";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
-export default function RequestDetailsPage() {
+export default function RequestDetails() {
   return (
-    <Suspense fallback={<div className="p-10 text-center text-gray-600">Loading request details...</div>}>
-      <RequestDetails />
-    </Suspense>
+    <div>
+      <Navbar />
+      <Request />
+      <Footer />
+    </div>
   );
 }
