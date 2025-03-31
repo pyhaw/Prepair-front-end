@@ -99,6 +99,7 @@ export default function Requests() {
       urgency: request.urgency,
       min_budget: request.min_budget || "",
       max_budget: request.max_budget || "",
+      status: request.status,
     }).toString();
 
     router.push(`/requests/details?${queryParams}`);
