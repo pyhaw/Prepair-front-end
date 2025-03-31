@@ -34,7 +34,7 @@ export default function ActiveJobs() {
           // Fetch job postings created by the client
           endpoint = `${API_URL}/api/job-postings/${userId}`;
         } else if (role === "fixer") {
-          // Fetch jobs the fixer has bid on with status "pending"
+          // Fetch jobs the fixer has bid on
           endpoint = `${API_URL}/api/job-bids?fixer_id=${userId}`;
         }
 
@@ -53,7 +53,7 @@ export default function ActiveJobs() {
         const data = await response.json();
         setJobs(data);
       } catch (error) {
-        setError(error.message);
+        setError("No active jobs");
       } finally {
         setLoading(false);
       }
@@ -67,6 +67,7 @@ export default function ActiveJobs() {
     // Pass the ownerId along with other job details
     const queryParams = new URLSearchParams({
       id: job.id,
+      client_id: job.client_id,
       title: job.title,
       description: job.description,
       location: job.location,
@@ -74,6 +75,7 @@ export default function ActiveJobs() {
       min_budget: job.min_budget || "",
       max_budget: job.max_budget || "",
       ownerId: userId, // include owner id
+      status: job.status,
     }).toString();
 
     router.push(`/requests/details?${queryParams}`);
@@ -111,6 +113,9 @@ export default function ActiveJobs() {
                 {job.min_budget && job.max_budget
                   ? `$${job.min_budget} - $${job.max_budget}`
                   : "N/A"}
+              </p>
+              <p className="text-black">
+                <strong>🔧 Status:</strong> {job.status.toUpperCase()}
               </p>
               <button
                 className="mt-2 bg-orange-500 text-white px-4 py-2 rounded w-full block text-center"
