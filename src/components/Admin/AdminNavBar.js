@@ -6,59 +6,41 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import  AdminNavbar from "@/components/Admin/AdminNavBar";
 
-const Navbar = () => {
+const AdminNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // Track admin status
 
-  // ✅ Check login and admin status from BACKEND
+  // ✅ Check login status from BACKEND
   useEffect(() => {
-    const verifyLoginAndAdmin = async () => {
+    const verifyLogin = async () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
         setIsLoggedIn(false);
-        setIsAdmin(false); // Ensure admin status is reset
         return;
       }
 
       try {
-        // Verify login
-        const loginResponse = await fetch("http://localhost:5001/api/auth/verify", {
+        const response = await fetch("http://localhost:5001/api/auth/verify", {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (loginResponse.ok) {
+        if (response.ok) {
           setIsLoggedIn(true);
-
-          // Verify admin status
-          const adminResponse = await fetch("http://localhost:5001/api/admin/verify", {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (adminResponse.ok) {
-            setIsAdmin(true); // User is an admin
-          } else {
-            setIsAdmin(false); // User is not an admin
-          }
         } else {
           console.warn("Invalid token. Logging out...");
           localStorage.removeItem("token");
           setIsLoggedIn(false);
-          setIsAdmin(false); // Reset admin status
         }
       } catch (error) {
-        console.error("Error verifying token or admin status:", error);
+        console.error("Error verifying token:", error);
         setIsLoggedIn(false);
-        setIsAdmin(false); // Reset admin status
       }
     };
 
-    verifyLoginAndAdmin();
+    verifyLogin();
   }, []);
 
   // ✅ Logout function
@@ -77,7 +59,7 @@ const Navbar = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Clear the token and role from local storage
+      // Clear the token from local storage
       localStorage.removeItem("token");
       localStorage.removeItem("userId");
       localStorage.removeItem("role");
@@ -88,11 +70,6 @@ const Navbar = () => {
       console.error("Error during logout:", error);
     }
   };
-
-  // ✅ Conditional rendering of AdminNavbar or Regular Navbar
-  if (isAdmin) {
-    return <AdminNavbar />;
-  }
 
   return (
     <nav className="bg-white shadow-md fixed top-0 left-0 w-full z-50">
@@ -112,12 +89,22 @@ const Navbar = () => {
 
         {/* Right Section: Navigation Buttons */}
         <div className="hidden md:flex items-center space-x-4">
+
+        <Button
+            variant="ghost"
+            className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
+            asChild
+          >
+            <Link href="/admin/users">Users</Link>
+          </Button>
+
+
           <Button
             variant="ghost"
             className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
             asChild
           >
-            <Link href="/activeJobs">Active Jobs</Link>
+            <Link href="/admin/jobs">Jobs</Link>
           </Button>
           <Button
             variant="ghost"
@@ -132,7 +119,7 @@ const Navbar = () => {
             className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
             asChild
           >
-            <Link href="/requests">View Requests</Link>
+            <Link href="/requests">Requests</Link>
           </Button>
 
           {isLoggedIn ? (
@@ -166,31 +153,6 @@ const Navbar = () => {
               </Button>
             </>
           )}
-
-          <Button
-            className="bg-green-500 text-white hover:bg-green-600 rounded-lg text-lg px-5 py-2.5 transition-all duration-200 shadow-md hover:shadow-lg"
-            asChild
-          >
-            <Link href="/make-request">Make a Request</Link>
-          </Button>
-
-          {/* New Button: Ask Pairy the Chatbot */}
-          <Button
-            className="bg-blue-500 text-white hover:bg-blue-600 rounded-lg text-lg px-5 py-2.5 transition-all duration-200 shadow-md hover:shadow-lg"
-            asChild
-          >
-            <Link href="/chatbot">Ask Pairy the Chatbot</Link>
-          </Button>
-
-          {!isLoggedIn && (
-            <Button
-              variant="outline"
-              className="border-2 border-orange-500 text-orange-500 hover:bg-orange-50 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-              asChild
-            >
-              <Link href="/LoginPage">Login</Link>
-            </Button>
-          )}
         </div>
 
         {/* Mobile Hamburger Menu */}
@@ -218,9 +180,8 @@ const Navbar = () => {
               className="text-gray-700 hover:text-gray-900 text-lg font-medium py-2"
               onClick={() => setIsOpen(false)}
             >
-              View Requests
+              Requests
             </Link>
-            {isLoggedIn ? (
               <>
                 <Link
                   href="/profilePage"
@@ -236,39 +197,7 @@ const Navbar = () => {
                   Logout
                 </button>
               </>
-            ) : (
-              <Link
-                href="/SignUpPage"
-                className="text-gray-700 hover:text-gray-900 text-lg font-medium py-2"
-                onClick={() => setIsOpen(false)}
-              >
-                Register
-              </Link>
-            )}
-            <Link
-              href="/make-request"
-              className="text-orange-500 hover:text-orange-700 text-lg font-medium py-2"
-              onClick={() => setIsOpen(false)}
-            >
-              Make a Request
-            </Link>
-            {/* Mobile menu link for Ask Pairy the Chatbot */}
-            <Link
-              href="/chatbot"
-              className="text-blue-500 hover:text-blue-700 text-lg font-medium py-2"
-              onClick={() => setIsOpen(false)}
-            >
-              Ask Pairy the Chatbot
-            </Link>
-            {!isLoggedIn && (
-              <Link
-                href="/LoginPage"
-                className="text-gray-700 hover:text-gray-900 text-lg font-medium py-2"
-                onClick={() => setIsOpen(false)}
-              >
-                Login
-              </Link>
-            )}
+            )
           </div>
         </div>
       )}
@@ -276,4 +205,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default AdminNavbar;
