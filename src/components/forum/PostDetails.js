@@ -34,6 +34,7 @@ export default function PostDetails() {
   // States for editing a reply
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [editingReplyContent, setEditingReplyContent] = useState("");
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
   useEffect(() => {
     if (!postId) return;
@@ -43,7 +44,7 @@ export default function PostDetails() {
         setLoading(true);
         // Fetch post details
         const postResponse = await fetch(
-          `http://localhost:5001/api/posts/${postId}`
+          `${API_URL}/api/posts/${postId}`
         );
         if (!postResponse.ok) {
           throw new Error("Failed to fetch post details");
@@ -58,7 +59,7 @@ export default function PostDetails() {
 
         // Fetch replies
         const repliesResponse = await fetch(
-          `http://localhost:5001/api/posts/${postId}/replies`
+          `${API_URL}/api/posts/${postId}/replies`
         );
         if (repliesResponse.ok) {
           const repliesData = await repliesResponse.json();
@@ -70,7 +71,7 @@ export default function PostDetails() {
           const token = localStorage.getItem("token");
           if (token) {
             const votesResponse = await fetch(
-              `http://localhost:5001/api/posts/${postId}/user-votes`,
+              `${API_URL}/api/posts/${postId}/user-votes`,
               {
                 headers: { Authorization: `Bearer ${token}` },
               }
@@ -105,7 +106,7 @@ export default function PostDetails() {
 
     try {
       const response = await fetch(
-        `http://localhost:5001/api/posts/${postId}/replies`,
+        `${API_URL}/api/posts/${postId}/replies`,
         {
           method: "POST",
           headers: {
@@ -140,8 +141,8 @@ export default function PostDetails() {
     try {
       const endpoint =
         itemType === "post"
-          ? `http://localhost:5001/api/posts/${itemId}/vote`
-          : `http://localhost:5001/api/replies/${itemId}/vote`;
+          ? `${API_URL}/api/posts/${itemId}/vote`
+          : `${API_URL}/api/replies/${itemId}/vote`;
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -200,7 +201,7 @@ export default function PostDetails() {
     }
     try {
       const response = await fetch(
-        `http://localhost:5001/api/posts/${postId}`,
+        `${API_URL}/api/posts/${postId}`,
         {
           method: "PUT",
           headers: {
@@ -234,7 +235,7 @@ export default function PostDetails() {
     }
     try {
       const response = await fetch(
-        `http://localhost:5001/api/posts/${postId}`,
+        `${API_URL}/api/posts/${postId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -267,7 +268,7 @@ export default function PostDetails() {
     }
     try {
       const response = await fetch(
-        `http://localhost:5001/api/posts/${postId}/replies/${replyId}`,
+        `${API_URL}/api/posts/${postId}/replies/${replyId}`,
         {
           method: "PUT",
           headers: {
@@ -300,7 +301,7 @@ export default function PostDetails() {
     }
     try {
       const response = await fetch(
-        `http://localhost:5001/api/posts/${postId}/replies/${replyId}`,
+        `${API_URL}/api/posts/${postId}/replies/${replyId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
