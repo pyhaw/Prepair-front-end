@@ -6,14 +6,15 @@ import axios from "axios";
 
 const ProfilePage = () => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-  const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const CLOUDINARY_UPLOAD_PRESET =
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
   const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
 
   const [isLoggedIn, setIsLoggedIn] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
     phone: "",
     jobTitle: "",
@@ -25,7 +26,7 @@ const ProfilePage = () => {
     graduationYear: "",
     previousRole: "",
     duration: "",
-    profilePicture: ""
+    profilePicture: "",
   });
   const [message, setMessage] = useState(""); // State to manage success/error messages
   const [previewImage, setPreviewImage] = useState(null); // State to preview the uploaded image
@@ -67,11 +68,11 @@ const ProfilePage = () => {
           );
           if (profileResponse.ok) {
             const userData = await profileResponse.json();
-            console.log(userData)
+            console.log(userData);
             // Update form with existing user data
             setFormData((prevData) => ({
               ...prevData,
-              name: userData.name || "",
+              username: userData.username || "",
               email: userData.email || "",
               phone: userData.phone || "",
               jobTitle: userData.jobTitle || "",
@@ -133,13 +134,20 @@ const ProfilePage = () => {
       const response = await axios.post(CLOUDINARY_UPLOAD_URL, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      console.log(response)
-      setFormData((prev) => ({ ...prev, profilePicture: response.data.secure_url }));
-} catch (error) {
-  console.error("Cloudinary Upload Error:", error.response?.data || error.message);
-  setMessage(`Failed to upload image. ${error.response?.data?.error?.message || ""}`);
-}
-
+      console.log(response);
+      setFormData((prev) => ({
+        ...prev,
+        profilePicture: response.data.secure_url,
+      }));
+    } catch (error) {
+      console.error(
+        "Cloudinary Upload Error:",
+        error.response?.data || error.message
+      );
+      setMessage(
+        `Failed to upload image. ${error.response?.data?.error?.message || ""}`
+      );
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -162,7 +170,7 @@ const ProfilePage = () => {
         const errorData = await response.json();
         throw new Error(errorData.error || `Error: ${response.status}`);
       }
-      console.log(formData)
+      console.log(formData);
       setMessage("Profile updated successfully!");
     } catch (error) {
       setMessage(`${error.message}`);
@@ -198,9 +206,7 @@ const ProfilePage = () => {
       {message && (
         <p
           className={`mt-4 text-sm ${
-            message.includes("successfully")
-              ? "text-green-500"
-              : "text-red-500"
+            message.includes("successfully") ? "text-green-500" : "text-red-500"
           }`}
         >
           {message}
@@ -212,16 +218,26 @@ const ProfilePage = () => {
         <label htmlFor="profilePicture" className="cursor-pointer">
           <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
             {formData.profilePicture ? (
-              <img src={formData.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+              <img
+                src={formData.profilePicture}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <span className="text-gray-500">Upload Photo</span>
             )}
           </div>
         </label>
-        <input type="file" id="profilePicture" name="profilePicture" accept="image/*" onChange={handleChange} className="hidden" />
+        <input
+          type="file"
+          id="profilePicture"
+          name="profilePicture"
+          accept="image/*"
+          onChange={handleChange}
+          className="hidden"
+        />
         <p className="text-sm text-gray-500 mt-2">Click to upload</p>
       </div>
-
 
       <form className="mt-8 max-w-xl mx-auto" onSubmit={handleSubmit}>
         <div className="profile-section">
@@ -230,10 +246,10 @@ const ProfilePage = () => {
           </h3>
           <input
             type="text"
-            name="name"
-            value={formData.name}
+            name="username"
+            value={formData.username}
             onChange={handleChange}
-            placeholder="Name"
+            placeholder="username"
             className="mt-4 p-3 w-full rounded-lg border border-gray-300 text-gray-700 placeholder-gray-400"
           />
           <input
