@@ -163,19 +163,6 @@ export default function RequestDetails() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-400">
       <Navbar />
-      <div className="max-w-4xl mx-auto mt-32 p-6">
-        <h2 className="text-4xl font-bold text-black mb-6">Request Details</h2>
-
-        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-          <div className="mb-4">
-            <label className="block font-semibold mb-1 text-black">Repair Title</label>
-            <input
-              type="text"
-              className="w-full border p-2 rounded text-black bg-white"
-              value={request.title}
-              readOnly
-            />
-          </div>
 
       <div className="flex-grow max-w-4xl mx-auto w-full mt-24 p-6">
         {error ? (
@@ -227,13 +214,12 @@ export default function RequestDetails() {
                     Urgency Level
                   </label>
                   <div
-                    className={`p-3 rounded-md border ${
-                      request.urgency === "High"
+                    className={`p-3 rounded-md border ${request.urgency === "High"
                         ? "bg-red-50 border-red-200 text-red-700"
                         : request.urgency === "Medium"
-                        ? "bg-yellow-50 border-yellow-200 text-yellow-700"
-                        : "bg-green-50 border-green-200 text-green-700"
-                    }`}
+                          ? "bg-yellow-50 border-yellow-200 text-yellow-700"
+                          : "bg-green-50 border-green-200 text-green-700"
+                      }`}
                   >
                     {request.urgency}
                   </div>
@@ -328,11 +314,10 @@ export default function RequestDetails() {
 
                     {bidMessage.text && (
                       <div
-                        className={`p-4 mb-4 rounded-md ${
-                          bidMessage.type === "success"
+                        className={`p-4 mb-4 rounded-md ${bidMessage.type === "success"
                             ? "bg-green-100 text-green-800 border border-green-200"
                             : "bg-red-100 text-red-800 border border-red-200"
-                        }`}
+                          }`}
                       >
                         {bidMessage.text}
                       </div>
@@ -441,19 +426,18 @@ export default function RequestDetails() {
 
                         {/* Bid status badge */}
                         <div
-                          className={`px-3 py-1 rounded-full text-sm ${
-                            bid.status === "accepted"
+                          className={`px-3 py-1 rounded-full text-sm ${bid.status === "accepted"
                               ? "bg-green-100 text-green-800"
                               : bid.status === "rejected"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
+                                ? "bg-red-100 text-red-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
                         >
                           {bid.status === "pending"
                             ? "Pending"
                             : bid.status === "accepted"
-                            ? "Accepted"
-                            : "Rejected"}
+                              ? "Accepted"
+                              : "Rejected"}
                         </div>
                       </div>
 

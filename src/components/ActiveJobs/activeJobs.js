@@ -63,6 +63,8 @@ export default function ActiveJobs() {
   }, []);
 
   const handleViewDetails = (job) => {
+    const userId = localStorage.getItem("userId");
+    // Pass the ownerId along with other job details
     const queryParams = new URLSearchParams({
       id: job.id,
       title: job.title,
@@ -71,6 +73,7 @@ export default function ActiveJobs() {
       urgency: job.urgency,
       min_budget: job.min_budget || "",
       max_budget: job.max_budget || "",
+      ownerId: userId, // include owner id
     }).toString();
 
     router.push(`/requests/details?${queryParams}`);
