@@ -46,6 +46,9 @@ const SignUp = () => {
       // Store the token for future authentication
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
+      localStorage.setItem("role", data.role);
+
+      console.log("this is data role ", data.role);
 
       // Redirect to /discussion after successful registration
       window.location.href = "/discussion";

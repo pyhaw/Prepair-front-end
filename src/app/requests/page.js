@@ -42,7 +42,7 @@ export default function Requests() {
         }
 
         const data = await response.json();
-        console.log(data)
+        console.log(data);
 
         const formattedRequests = data.map((job) => ({
           id: job.id,
@@ -55,9 +55,10 @@ export default function Requests() {
           description: job.description,
           status: job.status,
           images: Array.isArray(job.images) ? job.images : [],
+          date: job.date,
         }));
 
-        console.log(formattedRequests)
+        console.log(formattedRequests);
         setRequests(formattedRequests);
         setLoading(false);
       } catch (error) {
@@ -103,6 +104,7 @@ export default function Requests() {
       min_budget: request.min_budget || "",
       max_budget: request.max_budget || "",
       status: request.status,
+      date: request.date,
     }).toString();
 
     router.push(`/requests/details?${queryParams}`);
