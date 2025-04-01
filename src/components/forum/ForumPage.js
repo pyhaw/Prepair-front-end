@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ForumPost from "./ForumPost";
 import SearchBar from "./SearchBar";
 import SortOptions from "./SortOptions";
 import ForumSidebar from "./ForumSidebar";
@@ -18,7 +17,6 @@ const ForumPage = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Fetch posts from the backend API
     const fetchPosts = async () => {
       try {
         setLoading(true);
@@ -28,7 +26,6 @@ const ForumPage = () => {
           throw new Error("Failed to fetch posts");
         }
         const data = await response.json();
-        console.log("Fetched posts:", data); // Debug log
         setPosts(data.posts);
         setFilteredPosts(data.posts);
       } catch (err) {
@@ -42,29 +39,24 @@ const ForumPage = () => {
     fetchPosts();
   }, []);
 
-  // Apply filtering and sorting when dependencies change
   useEffect(() => {
     if (!posts.length) return;
 
-    // Filter by category and search query
     let result = [...posts];
-    
-    // Filter by category if not "all"
+
     if (selectedCategory !== "all") {
       result = result.filter(post => post.category === selectedCategory);
     }
-    
-    // Filter by search query if present
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(post => 
-        post.title.toLowerCase().includes(query) || 
+      result = result.filter(post =>
+        post.title.toLowerCase().includes(query) ||
         post.description.toLowerCase().includes(query) ||
         (post.author && post.author.toLowerCase().includes(query))
       );
     }
-    
-    // Apply sorting
+
     switch (sortBy) {
       case "newest":
         result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -73,7 +65,6 @@ const ForumPage = () => {
         result.sort((a, b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes));
         break;
       case "trending":
-        // Sorting by reply count and recency
         result.sort((a, b) => {
           const replyDiff = (b.replyCount || 0) - (a.replyCount || 0);
           if (replyDiff !== 0) return replyDiff;
@@ -83,7 +74,7 @@ const ForumPage = () => {
       default:
         break;
     }
-    
+
     setFilteredPosts(result);
   }, [posts, sortBy, searchQuery, selectedCategory]);
 
@@ -127,7 +118,9 @@ const ForumPage = () => {
         <div className="flex-1 md:ml-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
             <h2 className="text-2xl font-bold mb-3 sm:mb-0">
-              {selectedCategory === "all" ? "All Discussions" : `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Discussions`}
+              {selectedCategory === "all"
+                ? "All Discussions"
+                : `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Discussions`}
             </h2>
             <SortOptions setSortBy={setSortBy} sortBy={sortBy} />
           </div>
@@ -137,8 +130,38 @@ const ForumPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               {filteredPosts.map((post) => (
                 <Link key={post.id} href={`/discussion/${post.id}`} className="h-full">
-                  <div className="h-full">
-                    <ForumPost post={post} />
+                  <div className="bg-white rounded-lg shadow p-4 h-full flex flex-col">
+                    {/* Scrollable image preview */}
+                    {post.images?.length > 0 && (
+                      <div className="mb-4 overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                        <div className="flex gap-2">
+                          {post.images.map((url, idx) => (
+                            <img
+                              key={idx}
+                              src={url}
+                              alt={`Post image ${idx + 1}`}
+                              className="w-40 h-28 object-cover rounded-md flex-shrink-0 border"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Post content */}
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-gray-700 mb-4 line-clamp-3">
+                      {post.description}
+                    </p>
+                    <div className="mt-auto text-sm text-gray-500">
+                      Posted by {post.author || "Unknown"} •{" "}
+                      {new Date(post.created_at).toLocaleDateString()}
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-sm text-gray-500">
+                      <span>💬 {post.replyCount || 0} replies</span>
+                      <span>👍 {post.upvotes || 0} / 👎 {post.downvotes || 0}</span>
+                    </div>
                   </div>
                 </Link>
               ))}
@@ -152,8 +175,8 @@ const ForumPage = () => {
                 </p>
               )}
               {selectedCategory !== "all" && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
                   onClick={() => setSelectedCategory("all")}
                 >

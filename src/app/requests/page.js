@@ -42,6 +42,7 @@ export default function Requests() {
         }
 
         const data = await response.json();
+        console.log(data)
 
         const formattedRequests = data.map((job) => ({
           id: job.id,
@@ -53,8 +54,10 @@ export default function Requests() {
           max_budget: job.max_budget,
           description: job.description,
           status: job.status,
+          images: Array.isArray(job.images) ? job.images : [],
         }));
 
+        console.log(formattedRequests)
         setRequests(formattedRequests);
         setLoading(false);
       } catch (error) {
@@ -177,7 +180,7 @@ export default function Requests() {
         {loading && <p className="text-black">Loading requests...</p>}
         {error && <p className="text-red-500">{error}</p>}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRequests.length === 0 && !loading && !error ? (
             <p className="text-black col-span-full text-center">
               No matching repair requests found.
@@ -187,26 +190,44 @@ export default function Requests() {
               request.status === "open" ? (
                 <div
                   key={request.id}
-                  className="border p-4 rounded shadow-md bg-gray-100"
+                  className="border p-4 rounded shadow-md bg-white flex flex-col"
                 >
-                  <h3 className="text-xl font-bold text-black">
+                  <div className="overflow-x-auto whitespace-nowrap flex gap-2 mb-3">
+                    {request.images && request.images.length > 0 ? (
+                      request.images.map((url, index) => (
+                        <img
+                          key={index}
+                          src={url}
+                          alt={`image-${index}`}
+                          className="w-32 h-32 object-cover rounded border"
+                        />
+                      ))
+                    ) : (
+                      <div className="w-full h-32 flex items-center justify-center text-gray-400 border rounded">
+                        No image
+                      </div>
+                    )}
+                  </div>
+
+                  <h3 className="text-xl font-bold text-black mb-1">
                     {request.title}
                   </h3>
-                  <p className="text-black">{request.description}</p>
-                  <p className="text-black">
+                  <p className="text-black mb-2">{request.description}</p>
+                  <p className="text-black text-sm">
                     <strong>📍 Location:</strong> {request.location}
                   </p>
-                  <p className="text-black">
+                  <p className="text-black text-sm">
                     <strong>⚡ Urgency:</strong> {request.urgency}
                   </p>
-                  <p className="text-black">
+                  <p className="text-black text-sm mb-2">
                     <strong>💰 Budget:</strong>{" "}
                     {request.min_budget && request.max_budget
                       ? `$${request.min_budget} - $${request.max_budget}`
                       : "N/A"}
                   </p>
+
                   <button
-                    className="mt-2 bg-orange-500 text-white px-4 py-2 rounded w-full block text-center"
+                    className="mt-auto bg-orange-500 text-white px-4 py-2 rounded w-full block text-center hover:bg-orange-600"
                     onClick={() => handleViewDetails(request)}
                   >
                     View Details

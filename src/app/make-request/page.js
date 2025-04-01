@@ -151,7 +151,7 @@ export default function MakeRequest() {
     <div>
       <Navbar />
       <div className="max-w-4xl mx-auto mt-32 p-6">
-        <h2 className="text-4xl font-bold text-black text-center">
+        <h2 className="text-4xl font-bold text-black text-center mb-5">
           New Repair Request
         </h2>
 
