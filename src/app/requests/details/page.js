@@ -20,6 +20,7 @@ export default function RequestDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+
   // Get request details from search params
   const request = {
     id: searchParams.get("id") || "",
@@ -37,6 +38,7 @@ export default function RequestDetails() {
 
   // Fetch user data and token on component mount
   useEffect(() => {
+
     // Handle client-side localStorage access
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
@@ -215,10 +217,10 @@ export default function RequestDetails() {
                   </label>
                   <div
                     className={`p-3 rounded-md border ${request.urgency === "High"
-                        ? "bg-red-50 border-red-200 text-red-700"
-                        : request.urgency === "Medium"
-                          ? "bg-yellow-50 border-yellow-200 text-yellow-700"
-                          : "bg-green-50 border-green-200 text-green-700"
+                      ? "bg-red-50 border-red-200 text-red-700"
+                      : request.urgency === "Medium"
+                        ? "bg-yellow-50 border-yellow-200 text-yellow-700"
+                        : "bg-green-50 border-green-200 text-green-700"
                       }`}
                   >
                     {request.urgency}
@@ -294,6 +296,46 @@ export default function RequestDetails() {
                   </label>
                 </div>
               </div>
+              {userRole === "client" && String(userId) === String(request.client_id) && (
+                <div className="flex gap-2 mt-4">
+                  <button
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    onClick={() => router.push(`/requests/edit?id=${request.id}`)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    onClick={async () => {
+                      const confirmed = confirm("Are you sure you want to delete this request?");
+                      if (!confirmed) return;
+                      try {
+                        const token = localStorage.getItem("token");
+                        const response = await fetch(`${API_URL}/api/job-postings/${request.id}`, {
+                          method: "DELETE",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                        });
+                        if (response.ok) {
+                          alert("Request deleted successfully");
+                          router.push("/requests");
+                        } else {
+                          const errorText = await response.text();
+                          console.error("Delete error:", errorText);
+                          alert("Failed to delete the request:\n" + errorText);
+                        }
+                      } catch (err) {
+                        console.error("Error deleting request:", err);
+                        alert("An error occurred while deleting the request");
+                      }
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Bid Job button - only visible for fixers who haven't already bid */}
@@ -315,8 +357,8 @@ export default function RequestDetails() {
                     {bidMessage.text && (
                       <div
                         className={`p-4 mb-4 rounded-md ${bidMessage.type === "success"
-                            ? "bg-green-100 text-green-800 border border-green-200"
-                            : "bg-red-100 text-red-800 border border-red-200"
+                          ? "bg-green-100 text-green-800 border border-green-200"
+                          : "bg-red-100 text-red-800 border border-red-200"
                           }`}
                       >
                         {bidMessage.text}
@@ -427,10 +469,10 @@ export default function RequestDetails() {
                         {/* Bid status badge */}
                         <div
                           className={`px-3 py-1 rounded-full text-sm ${bid.status === "accepted"
-                              ? "bg-green-100 text-green-800"
-                              : bid.status === "rejected"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-yellow-100 text-yellow-800"
+                            ? "bg-green-100 text-green-800"
+                            : bid.status === "rejected"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
                             }`}
                         >
                           {bid.status === "pending"

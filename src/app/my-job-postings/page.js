@@ -61,6 +61,7 @@ export default function Requests() {
             ? `$${job.min_budget} - $${job.max_budget}`
             : "N/A",
           description: job.description,
+          client_id: job.client_id,
         }));
 
         setRequests(formattedRequests);
