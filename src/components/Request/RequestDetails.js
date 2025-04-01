@@ -41,6 +41,7 @@ export default function RequestDetails() {
       const token = localStorage.getItem("token");
       const role = localStorage.getItem("role");
       const id = localStorage.getItem("userId");
+      setUserRole(role);
 
       if (!token) {
         setError("You must be logged in to view this page");
@@ -59,6 +60,7 @@ export default function RequestDetails() {
       request.client_id,
       typeof request.client_id
     );
+    console.log(userRole);
   }, [userId]);
 
   // Format date for display

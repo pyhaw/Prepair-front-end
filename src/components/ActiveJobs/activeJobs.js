@@ -76,6 +76,7 @@ export default function ActiveJobs() {
       max_budget: job.max_budget || "",
       ownerId: userId, // include owner id
       status: job.status,
+      date: job.date,
     }).toString();
 
     router.push(`/requests/details?${queryParams}`);
