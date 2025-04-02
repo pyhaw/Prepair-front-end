@@ -23,7 +23,8 @@ const NewPostForm = () => {
   const [error, setError] = useState(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-  const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const CLOUDINARY_UPLOAD_PRESET =
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
   const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
 
   const handleChange = (e) => {
@@ -77,6 +78,8 @@ const NewPostForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const id = localStorage.getItem("userId");
+    console.log("this is userId; ", id);
 
     if (!formData.title || !formData.description) {
       setError("Title and description are required");
@@ -102,6 +105,7 @@ const NewPostForm = () => {
         body: JSON.stringify({
           ...formData,
           images: imageFiles, // Array of Cloudinary URLs
+          userId: id,
         }),
       });
 
@@ -136,7 +140,10 @@ const NewPostForm = () => {
           <div className="flex justify-between items-center mb-3">
             <p className="text-sm text-gray-600">
               Drag & drop images here or{" "}
-              <label htmlFor="postImages" className="text-orange-600 underline cursor-pointer">
+              <label
+                htmlFor="postImages"
+                className="text-orange-600 underline cursor-pointer"
+              >
                 click to browse
               </label>
             </p>
@@ -187,7 +194,10 @@ const NewPostForm = () => {
         <form onSubmit={handleSubmit}>
           {/* Title */}
           <div className="mb-4">
-            <label htmlFor="title" className="block text-gray-700 font-medium mb-2">
+            <label
+              htmlFor="title"
+              className="block text-gray-700 font-medium mb-2"
+            >
               Title
             </label>
             <input
@@ -204,7 +214,10 @@ const NewPostForm = () => {
 
           {/* Description */}
           <div className="mb-4">
-            <label htmlFor="description" className="block text-gray-700 font-medium mb-2">
+            <label
+              htmlFor="description"
+              className="block text-gray-700 font-medium mb-2"
+            >
               Description
             </label>
             <textarea
@@ -221,7 +234,10 @@ const NewPostForm = () => {
 
           {/* Category */}
           <div className="mb-6">
-            <label htmlFor="category" className="block text-gray-700 font-medium mb-2">
+            <label
+              htmlFor="category"
+              className="block text-gray-700 font-medium mb-2"
+            >
               Category
             </label>
             <select

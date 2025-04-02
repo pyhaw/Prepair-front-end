@@ -230,6 +230,43 @@ export default function RequestDetails() {
     }
   };
 
+  const handleEdit = (request) => {
+    const queryParams = new URLSearchParams({
+      id: request.id,
+      client_id: request.client_id,
+      title: request.title,
+      description: request.description,
+      location: request.location,
+      urgency: request.urgency,
+      min_budget: request.min_budget || "",
+      max_budget: request.max_budget || "",
+      ownerId: userId, // include owner id
+      status: request.status,
+      date: request.date,
+    }).toString();
+
+    router.push(`/editRequest?${queryParams}`);
+  };
+
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_URL}/api/job-postings/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit request");
+      }
+      router.push(`/activeJobs`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-400">
       <div className="flex-grow max-w-4xl mx-auto w-full mt-24 p-6">
@@ -350,7 +387,7 @@ export default function RequestDetails() {
                     readOnly
                   />
                 </div>
-                <div className="w-1/2">
+                <div className="w-1/2 items-center justify-between">
                   <div
                     className={`w-full p-3 rounded-md text-center font-semibold border ${
                       request.jobStatus === "completed"
@@ -367,6 +404,23 @@ export default function RequestDetails() {
                       ? request.jobStatus.replace("_", " ")
                       : "N/A"}
                   </div>
+
+                  {userId == request.client_id ? (
+                    <div className="flex gap-2">
+                      <button
+                        className="flex items-center gap-2 px-4 py-2 rounded-md text-blue-600 border border-blue-300 font-semibold hover:bg-blue-500 hover:text-white transition duration-200"
+                        onClick={() => handleEdit(request)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="flex items-center gap-2 px-4 py-2 rounded-md text-red-600 font-semibold border border-red-500 hover:bg-red-500 hover:text-white transition duration-200"
+                        onClick={() => handleDelete(request.id)}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="flex items-center space-x-2 md:col-span-2">
