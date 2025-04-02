@@ -11,22 +11,22 @@ export default function ActiveJobs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userRole, setUserRole] = useState("");
+  const [userId, setUserId] = useState("");
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
   useEffect(() => {
     const fetchActiveJobs = async () => {
       try {
-        const API_URL =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-
         const token = localStorage.getItem("token");
         const userId = localStorage.getItem("userId");
         const role = localStorage.getItem("role");
+        setUserId(userId);
+        setUserRole(role);
 
         if (!token) {
           throw new Error("User is not authenticated. Please log in.");
         }
-
-        setUserRole(role);
 
         let endpoint = "";
 
@@ -82,6 +82,43 @@ export default function ActiveJobs() {
     router.push(`/requests/details?${queryParams}`);
   };
 
+  const handleEdit = (job) => {
+    const queryParams = new URLSearchParams({
+      id: job.id,
+      client_id: job.client_id,
+      title: job.title,
+      description: job.description,
+      location: job.location,
+      urgency: job.urgency,
+      min_budget: job.min_budget || "",
+      max_budget: job.max_budget || "",
+      ownerId: userId, // include owner id
+      status: job.status,
+      date: job.date,
+    }).toString();
+
+    router.push(`/editRequest?${queryParams}`);
+  };
+
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_URL}/api/job-postings/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit request");
+      }
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div>
       <Navbar />
@@ -101,7 +138,26 @@ export default function ActiveJobs() {
               key={job.id}
               className="border p-4 rounded shadow-md bg-gray-100"
             >
-              <h3 className="text-xl font-bold text-black">{job.title}</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-black">{job.title}</h3>
+
+                {userId == job.client_id ? (
+                  <div className="flex gap-2">
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 rounded-md text-blue-600 border border-blue-300 font-semibold hover:bg-blue-500 hover:text-white transition duration-200"
+                      onClick={() => handleEdit(job)}
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      className="flex items-center gap-2 px-4 py-2 rounded-md text-red-600 font-semibold border border-red-500 hover:bg-red-500 hover:text-white transition duration-200"
+                      onClick={() => handleDelete(job.id)}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ) : null}
+              </div>
               <p className="text-black">{job.description}</p>
               <p className="text-black">
                 <strong>📍 Location:</strong> {job.location}

@@ -1,28 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import axios from "axios";
 import { Upload, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
-export default function MakeRequest({ existingRequest = null }) {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    location: "",
-    urgency: "",
-    date: "",
-    minBudget: "",
-    maxBudget: "",
-    notify: false,
-  });
-
+export default function EditRequest() {
   const [message, setMessage] = useState("");
   const [errorFields, setErrorFields] = useState({});
+  const searchParams = useSearchParams();
   const router = useRouter();
-
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [uploadMessage, setUploadMessage] = useState("");
@@ -31,6 +20,40 @@ export default function MakeRequest({ existingRequest = null }) {
   const CLOUDINARY_UPLOAD_PRESET =
     process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
   const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
+  const [formData, setFormData] = useState({
+    id: "",
+    client_id: "",
+    title: "N/A",
+    description: "N/A",
+    location: "N/A",
+    urgency: "N/A",
+    date: "",
+    min_budget: "N/A",
+    max_budget: "N/A",
+    notify: false,
+    jobStatus: "",
+  });
+
+  useEffect(() => {
+    const dateFromParams = searchParams.get("date");
+    const formattedDate = dateFromParams
+      ? new Date(dateFromParams).toISOString().split("T")[0]
+      : "";
+    setFormData({
+      id: searchParams.get("id") || "",
+      client_id: searchParams.get("client_id"),
+      title: searchParams.get("title") || "N/A",
+      description: searchParams.get("description") || "N/A",
+      location: searchParams.get("location") || "N/A",
+      urgency: searchParams.get("urgency") || "N/A",
+      date: formattedDate || "",
+      min_budget: parseFloat(searchParams.get("min_budget")) || "N/A",
+      max_budget: parseFloat(searchParams.get("max_budget")) || "N/A",
+      notify: searchParams.get("notify") === "true",
+      jobStatus: searchParams.get("status") || "",
+    });
+    console.log(formattedDate);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -40,18 +63,6 @@ export default function MakeRequest({ existingRequest = null }) {
     });
     setErrorFields({ ...errorFields, [name]: false });
   };
-
-  const validateFields = () => {
-    const errors = {};
-    Object.keys(formData).forEach((key) => {
-      if (key !== "notify" && !formData[key].trim()) {
-        errors[key] = true;
-      }
-    });
-    setErrorFields(errors);
-    return Object.keys(errors).length === 0;
-  };
-
   const handleFileInput = (e) => {
     const files = Array.from(e.target.files);
     processFiles(files);
@@ -93,31 +104,24 @@ export default function MakeRequest({ existingRequest = null }) {
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const submitRequest = async () => {
-    setMessage("");
-    if (!validateFields()) return;
-
+  const editRequest = async () => {
+    console.log("EDITING");
     const token = localStorage.getItem("token");
-    if (!token) {
-      setErrorFields({ token: true });
-      return;
-    }
-
     const requestData = {
-      client_id: localStorage.getItem("userId"),
+      id: formData.id,
       title: formData.title,
       description: formData.description,
       location: formData.location,
       urgency: formData.urgency,
       date: formData.date,
-      min_budget: formData.minBudget ? parseFloat(formData.minBudget) : null,
-      max_budget: formData.maxBudget ? parseFloat(formData.maxBudget) : null,
+      min_budget: formData.min_budget ? parseFloat(formData.min_budget) : null,
+      max_budget: formData.max_budget ? parseFloat(formData.max_budget) : null,
       notify: formData.notify,
       images: imageFiles,
     };
 
     try {
-      const response = await fetch(`${API_URL}/api/job-postings`, {
+      const response = await fetch(`${API_URL}/api/edit-postings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -130,33 +134,19 @@ export default function MakeRequest({ existingRequest = null }) {
       if (!response.ok) {
         throw new Error(data.error || "Failed to submit request");
       }
-
-      setMessage("Job request submitted successfully!");
-      setFormData({
-        title: "",
-        description: "",
-        location: "",
-        urgency: "",
-        date: "",
-        minBudget: "",
-        maxBudget: "",
-        notify: false,
-      });
-      setImagePreviews([]);
-      setImageFiles([]);
-      setErrorFields({});
-      router.push(`/requests`);
+      router.push(`/activeJobs`);
     } catch (error) {
       setMessage(error.message);
     }
   };
 
+  // Fetch user data and token on component mount
   return (
     <div>
       <Navbar />
       <div className="max-w-4xl mx-auto mt-32 p-6">
         <h2 className="text-4xl font-bold text-black text-center mb-5">
-          New Repair Request
+          Edit Repair Request
         </h2>
 
         {/* Upload Section */}
@@ -228,12 +218,6 @@ export default function MakeRequest({ existingRequest = null }) {
         {message && (
           <p className="text-green-600 mt-4 text-center">{message}</p>
         )}
-        {Object.keys(errorFields).length > 0 && (
-          <p className="text-red-600 text-center mt-2">
-            Please fill in all required fields.
-          </p>
-        )}
-
         {/* Form Fields */}
         <div className="mt-6">
           <label className="block font-semibold mb-1 text-black">
@@ -282,7 +266,6 @@ export default function MakeRequest({ existingRequest = null }) {
             value={formData.location}
             onChange={handleChange}
           >
-            <option value="">Select</option>
             <option value="central">Central</option>
             <option value="north">North</option>
             <option value="northeast">North-East</option>
@@ -305,7 +288,6 @@ export default function MakeRequest({ existingRequest = null }) {
             value={formData.urgency}
             onChange={handleChange}
           >
-            <option value="">Select</option>
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
             <option value="High">High</option>
@@ -334,27 +316,27 @@ export default function MakeRequest({ existingRequest = null }) {
           <div className="flex space-x-2">
             <input
               type="number"
-              name="minBudget"
+              name="min_budget"
               className={`border p-2 rounded w-1/2 text-black bg-white ${
                 errorFields.minBudget
                   ? "border-red-600 border-2"
                   : "border-gray-300"
               }`}
               placeholder="Min. $"
-              value={formData.minBudget}
+              value={formData.min_budget}
               onChange={handleChange}
             />
             <span>-</span>
             <input
               type="number"
-              name="maxBudget"
+              name="max_budget"
               className={`border p-2 rounded w-1/2 text-black bg-white ${
                 errorFields.maxBudget
                   ? "border-red-600 border-2"
                   : "border-gray-300"
               }`}
               placeholder="Max. $"
-              value={formData.maxBudget}
+              value={formData.max_budget}
               onChange={handleChange}
             />
           </div>
@@ -373,10 +355,17 @@ export default function MakeRequest({ existingRequest = null }) {
 
         <div className="mt-6">
           <button
-            className="bg-orange-500 text-white px-6 py-3 rounded w-full"
-            onClick={submitRequest}
+            className="bg-orange-500 text-white px-6 py-3 rounded w-full border border-orange-500 hover:bg-orange-600"
+            onClick={editRequest}
           >
-            Submit
+            Edit
+          </button>
+
+          <button
+            onClick={() => router.back()}
+            className=" text-white px-6 py-3 rounded w-full border border-gray-400 hover:bg-gray-400"
+          >
+            Cancel
           </button>
         </div>
       </div>
