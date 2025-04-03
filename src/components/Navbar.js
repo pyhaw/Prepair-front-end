@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import  AdminNavbar from "@/components/Admin/AdminNavBar";
+import AdminNavbar from "@/components/Admin/AdminNavBar";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,19 +26,25 @@ const Navbar = () => {
 
       try {
         // Verify login
-        const loginResponse = await fetch("http://localhost:5001/api/auth/verify", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const loginResponse = await fetch(
+          "http://localhost:5001/api/auth/verify",
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (loginResponse.ok) {
           setIsLoggedIn(true);
 
           // Verify admin status
-          const adminResponse = await fetch("http://localhost:5001/api/admin/verify", {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const adminResponse = await fetch(
+            "http://localhost:5001/api/admin/verify",
+            {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
 
           if (adminResponse.ok) {
             setIsAdmin(true); // User is an admin
@@ -115,14 +121,12 @@ const Navbar = () => {
           <Button
             variant="ghost"
             className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-            asChild
           >
             <Link href="/activeJobs">Active Jobs</Link>
           </Button>
           <Button
             variant="ghost"
             className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-            asChild
           >
             <Link href="/discussion">Discussion</Link>
           </Button>
@@ -130,7 +134,6 @@ const Navbar = () => {
           <Button
             variant="ghost"
             className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-            asChild
           >
             <Link href="/requests">View Requests</Link>
           </Button>
@@ -141,7 +144,6 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-                asChild
               >
                 <Link href="/profilePage">View Profile</Link>
               </Button>
@@ -160,25 +162,18 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-                asChild
               >
                 <Link href="/SignUpPage">Register</Link>
               </Button>
             </>
           )}
 
-          <Button
-            className="bg-green-500 text-white hover:bg-green-600 rounded-lg text-lg px-5 py-2.5 transition-all duration-200 shadow-md hover:shadow-lg"
-            asChild
-          >
+          <Button className="bg-green-500 text-white hover:bg-green-600 rounded-lg text-lg px-5 py-2.5 transition-all duration-200 shadow-md hover:shadow-lg">
             <Link href="/make-request">Make a Request</Link>
           </Button>
 
           {/* New Button: Ask Pairy the Chatbot */}
-          <Button
-            className="bg-blue-500 text-white hover:bg-blue-600 rounded-lg text-lg px-5 py-2.5 transition-all duration-200 shadow-md hover:shadow-lg"
-            asChild
-          >
+          <Button className="bg-blue-500 text-white hover:bg-blue-600 rounded-lg text-lg px-5 py-2.5 transition-all duration-200 shadow-md hover:shadow-lg">
             <Link href="/chatbot">Ask Pairy the Chatbot</Link>
           </Button>
 
@@ -186,7 +181,6 @@ const Navbar = () => {
             <Button
               variant="outline"
               className="border-2 border-orange-500 text-orange-500 hover:bg-orange-50 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-              asChild
             >
               <Link href="/LoginPage">Login</Link>
             </Button>
