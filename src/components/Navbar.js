@@ -63,7 +63,6 @@ const Navbar = () => {
         setIsAdmin(false); // Reset admin status
       }
     };
-
     verifyLoginAndAdmin();
   }, []);
 
