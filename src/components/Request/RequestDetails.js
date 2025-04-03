@@ -17,6 +17,9 @@ export default function RequestDetails() {
   const [error, setError] = useState("");
   const [isBidSubmitted, setIsBidSubmitted] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [editingBidId, setEditingBidId] = useState(null);
+  const [editBidAmount, setEditBidAmount] = useState("");
+  const [editBidDescription, setEditBidDescription] = useState("");
 
   // Get request details from search params
   const [request, setRequest] = useState({
@@ -249,21 +252,75 @@ export default function RequestDetails() {
   };
 
   const handleDelete = async (id) => {
+    if (confirm("Do you want to delete job request?")) {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await fetch(`${API_URL}/api/job-postings/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to submit request");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    router.push(`/activeJobs`);
+  };
+
+  const handleEditBid = (bid) => {
+    setEditingBidId(bid.id);
+    setEditBidAmount(bid.bid_amount);
+    setEditBidDescription(bid.description || "");
+  };
+
+  const handleUpdateBid = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`${API_URL}/api/job-postings/${id}`, {
-        method: "DELETE",
+      const response = await fetch(`${API_URL}/api/edit-bid`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({
+          id: editingBidId,
+          bid_amount: editBidAmount,
+          description: editBidDescription,
+        }),
       });
       if (!response.ok) {
         throw new Error(data.error || "Failed to submit request");
       }
-      router.push(`/activeJobs`);
+      window.location.reload();
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleDeleteBid = async (id) => {
+    const token = localStorage.getItem("token");
+    if (confirm("Do you want to delete job bid?")) {
+      try {
+        const response = await fetch(`${API_URL}/api/delete-bid/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        await response;
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to submit request");
+        }
+        window.location.reload();
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -394,7 +451,8 @@ export default function RequestDetails() {
                         ? "bg-green-200 text-green-800 border-green-500"
                         : request.jobStatus === "in_progress"
                         ? "bg-blue-200 text-blue-800 border-blue-500"
-                        : request.jobStatus === "open"
+                        : request.jobStatus === "open" ||
+                          request.jobStatus === "pending"
                         ? "bg-orange-200 text-orange-800 border-orange-500"
                         : "bg-gray-200 text-gray-800 border-gray-500"
                     }`}
@@ -551,86 +609,154 @@ export default function RequestDetails() {
                       key={bid.id}
                       className="bg-white p-5 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition duration-300"
                     >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-bold text-gray-800 text-lg">
-                            ${Number(bid.bid_amount).toFixed(2)}
+                      {editingBidId === bid.id ? (
+                        <form onSubmit={handleUpdateBid} className="space-y-4">
+                          <div>
+                            <label className="block font-semibold mb-2 text-gray-700">
+                              Bid Amount ($)
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              className="w-full border border-gray-300 p-3 rounded text-gray-700"
+                              value={editBidAmount}
+                              onChange={(e) => setEditBidAmount(e.target.value)}
+                              required
+                            />
                           </div>
-                          <div className="mt-1 text-gray-600">
-                            <span className="font-semibold">Bidder:</span>{" "}
-                            {bid.fixer_name || "Anonymous"}
-                          </div>
-                          <div className="text-gray-500 text-sm">
-                            Submitted:{" "}
-                            {new Date(bid.created_at).toLocaleDateString()}
-                          </div>
-                        </div>
 
-                        {/* Bid status badge */}
-                        <div
-                          className={`px-3 py-1 rounded-full text-sm ${
-                            bid.status === "accepted"
-                              ? "bg-green-100 text-green-800"
-                              : bid.status === "rejected"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {bid.status === "pending" ? "Pending" : "Accepted"}
-                        </div>
-                      </div>
-
-                      {/* Bid description */}
-                      {bid.description && (
-                        <div className="mt-3 pt-3 border-t border-gray-100">
-                          <div className="text-gray-800 whitespace-pre-line">
-                            {bid.description}
+                          <div>
+                            <label className="block font-semibold mb-2 text-gray-700">
+                              Message to Client
+                            </label>
+                            <textarea
+                              className="w-full border border-gray-300 p-3 text-gray-700 rounded h-32"
+                              value={editBidDescription}
+                              onChange={(e) =>
+                                setEditBidDescription(e.target.value)
+                              }
+                            />
                           </div>
-                        </div>
-                      )}
 
-                      {/* Actions for client on their own job posting */}
-                      {bid.status === "pending" &&
-                      String(userId) === String(request.client_id) ? (
-                        <div className="mt-4 pt-3 border-t border-gray-100 flex space-x-3">
-                          <button
-                            className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 transition duration-300"
-                            onClick={() => handleAcceptBid(bid)}
-                          >
-                            Accept Bid
-                          </button>
-                          <button
-                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition duration-300"
-                            onClick={() =>
-                              alert(
-                                "Message bidder functionality to be implemented"
-                              )
-                            }
-                          >
-                            Message
-                          </button>
-                        </div>
-                      ) : bid.status === "accepted" &&
-                        request.jobStatus === "in_progress" ? (
-                        <div className="mt-4 pt-3 border-t border-gray-100 flex space-x-3">
-                          <button
-                            className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 transition duration-300"
-                            onClick={() => handleCompleteBid(bid)}
-                          >
-                            Mark as Completed
-                          </button>
-                          <button
-                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition duration-300"
-                            onClick={() =>
-                              alert(
-                                "Message bidder functionality to be implemented"
-                              )
-                            }
-                          >
-                            Message
-                          </button>
-                        </div>
-                      ) : null}
+                          <div className="flex space-x-3">
+                            <button
+                              type="submit"
+                              className="bg-orange-500 text-white px-6 py-2 rounded-md font-semibold hover:bg-orange-600"
+                            >
+                              Update Bid
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingBidId(null)}
+                              className="bg-gray-200 text-gray-800 px-6 py-2 rounded-md font-semibold hover:bg-gray-300"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        <>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-bold text-gray-800 text-lg">
+                                ${Number(bid.bid_amount).toFixed(2)}
+                              </div>
+                              <div className="mt-1 text-gray-600">
+                                <span className="font-semibold">Bidder:</span>{" "}
+                                {bid.fixer_name || "Anonymous"}
+                              </div>
+                              <div className="text-gray-500 text-sm">
+                                Submitted:{" "}
+                                {new Date(bid.created_at).toLocaleDateString()}
+                              </div>
+                            </div>
+
+                            {/* Bid status badge */}
+                            <div
+                              className={`px-3 py-1 rounded-full text-sm ${
+                                bid.status === "accepted"
+                                  ? "bg-green-100 text-green-800"
+                                  : bid.status === "rejected"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {bid.status === "pending"
+                                ? "Pending"
+                                : "Accepted"}
+                            </div>
+                          </div>
+
+                          {/* Bid description */}
+                          {bid.description && (
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              <div className="text-gray-800 whitespace-pre-line">
+                                {bid.description}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Actions for client on their own job posting */}
+                          {bid.status === "pending" &&
+                          String(userId) === String(request.client_id) ? (
+                            <div className="mt-4 pt-3 border-t border-gray-100 flex space-x-3">
+                              <button
+                                className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 transition duration-300"
+                                onClick={() => handleAcceptBid(bid)}
+                              >
+                                Accept Bid
+                              </button>
+                              <button
+                                className="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition duration-300"
+                                onClick={() =>
+                                  alert(
+                                    "Message bidder functionality to be implemented"
+                                  )
+                                }
+                              >
+                                Message
+                              </button>
+                            </div>
+                          ) : bid.status === "accepted" &&
+                            request.jobStatus === "in_progress" ? (
+                            <div className="mt-4 pt-3 border-t border-gray-100 flex space-x-3">
+                              <button
+                                className="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600 transition duration-300"
+                                onClick={() => handleCompleteBid(bid)}
+                              >
+                                Mark as Completed
+                              </button>
+                              <button
+                                className="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition duration-300"
+                                onClick={() =>
+                                  alert(
+                                    "Message bidder functionality to be implemented"
+                                  )
+                                }
+                              >
+                                Message
+                              </button>
+                            </div>
+                          ) : null}
+                          {bid.fixer_id == userId ? (
+                            <div className="flex gap-2">
+                              <button
+                                className="flex items-center gap-2 px-4 py-2 rounded-md text-blue-600 border border-blue-300 font-semibold hover:bg-blue-500 hover:text-white transition duration-200"
+                                onClick={() => handleEditBid(bid)}
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                className="flex items-center gap-2 px-4 py-2 rounded-md text-red-600 font-semibold border border-red-500 hover:bg-red-500 hover:text-white transition duration-200"
+                                onClick={() => handleDeleteBid(bid.id)}
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          ) : null}
+                        </>
+                      )}{" "}
                     </div>
                   ))}
                 </div>

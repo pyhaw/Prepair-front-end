@@ -101,22 +101,24 @@ export default function ActiveJobs() {
   };
 
   const handleDelete = async (id) => {
-    const token = localStorage.getItem("token");
-    try {
-      const response = await fetch(`${API_URL}/api/job-postings/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to submit request");
+    if (confirm("Do you want to delete job request?")) {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await fetch(`${API_URL}/api/job-postings/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to submit request");
+        }
+      } catch (error) {
+        console.log(error);
       }
-      window.location.reload();
-    } catch (error) {
-      console.log(error);
     }
+    window.location.reload();
   };
 
   return (
