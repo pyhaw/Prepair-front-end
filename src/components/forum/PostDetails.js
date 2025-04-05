@@ -36,6 +36,15 @@ export default function PostDetails() {
   const [editingReplyContent, setEditingReplyContent] = useState("");
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  useEffect(() => {
+    const storedId = localStorage.getItem("userId");
+    if (storedId) {
+      setCurrentUserId(parseInt(storedId));
+    }
+  }, []);
+
   useEffect(() => {
     if (!postId) return;
 
@@ -43,9 +52,7 @@ export default function PostDetails() {
       try {
         setLoading(true);
         // Fetch post details
-        const postResponse = await fetch(
-          `${API_URL}/api/posts/${postId}`
-        );
+        const postResponse = await fetch(`${API_URL}/api/posts/${postId}`);
         if (!postResponse.ok) {
           throw new Error("Failed to fetch post details");
         }
@@ -105,17 +112,14 @@ export default function PostDetails() {
     }
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/posts/${postId}/replies`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ content: newReply }),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/posts/${postId}/replies`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newReply }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -200,21 +204,18 @@ export default function PostDetails() {
       return;
     }
     try {
-      const response = await fetch(
-        `${API_URL}/api/posts/${postId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            title: editPostTitle,
-            content: editPostContent,
-            category: editPostCategory,
-          }),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/posts/${postId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: editPostTitle,
+          content: editPostContent,
+          category: editPostCategory,
+        }),
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData?.error || "Failed to update post");
@@ -234,13 +235,10 @@ export default function PostDetails() {
       return;
     }
     try {
-      const response = await fetch(
-        `${API_URL}/api/posts/${postId}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await fetch(`${API_URL}/api/posts/${postId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!response.ok) {
         throw new Error("Failed to delete post");
       }
@@ -395,12 +393,16 @@ export default function PostDetails() {
                 {post.title}
               </h1>
               <div className="flex space-x-2">
-                <Button variant="ghost" onClick={handlePostEditToggle}>
-                  <Edit3 size={20} />
-                </Button>
-                <Button variant="ghost" onClick={handlePostDelete}>
-                  <Trash2 size={20} />
-                </Button>
+                {currentUserId === post.client_id && (
+                  <>
+                    <Button variant="ghost" onClick={handlePostEditToggle}>
+                      <Edit3 size={20} />
+                    </Button>
+                    <Button variant="ghost" onClick={handlePostDelete}>
+                      <Trash2 size={20} />
+                    </Button>
+                  </>
+                )}
                 <Button
                   variant="ghost"
                   onClick={() => router.push("/discussion")}
@@ -419,10 +421,11 @@ export default function PostDetails() {
             <div className="flex flex-col items-center mr-4">
               <button
                 onClick={() => handleVote(post.id, "up")}
-                className={`p-1 rounded-full ${userVotes.post === "up"
-                  ? "bg-green-100 text-green-600"
-                  : "text-gray-400 hover:text-green-500"
-                  }`}
+                className={`p-1 rounded-full ${
+                  userVotes.post === "up"
+                    ? "bg-green-100 text-green-600"
+                    : "text-gray-400 hover:text-green-500"
+                }`}
               >
                 <ArrowUp size={24} />
               </button>
@@ -431,10 +434,11 @@ export default function PostDetails() {
               </span>
               <button
                 onClick={() => handleVote(post.id, "down")}
-                className={`p-1 rounded-full ${userVotes.post === "down"
-                  ? "bg-red-100 text-red-600"
-                  : "text-gray-400 hover:text-red-500"
-                  }`}
+                className={`p-1 rounded-full ${
+                  userVotes.post === "down"
+                    ? "bg-red-100 text-red-600"
+                    : "text-gray-400 hover:text-red-500"
+                }`}
               >
                 <ArrowDown size={24} />
               </button>
@@ -482,10 +486,11 @@ export default function PostDetails() {
                     <div className="flex flex-col items-center mr-4">
                       <button
                         onClick={() => handleVote(reply.id, "up", "reply")}
-                        className={`p-1 rounded-full ${userVotes[`reply_${reply.id}`] === "up"
-                          ? "bg-green-100 text-green-600"
-                          : "text-gray-400 hover:text-green-500"
-                          }`}
+                        className={`p-1 rounded-full ${
+                          userVotes[`reply_${reply.id}`] === "up"
+                            ? "bg-green-100 text-green-600"
+                            : "text-gray-400 hover:text-green-500"
+                        }`}
                       >
                         <ArrowUp size={18} />
                       </button>
@@ -494,10 +499,11 @@ export default function PostDetails() {
                       </span>
                       <button
                         onClick={() => handleVote(reply.id, "down", "reply")}
-                        className={`p-1 rounded-full ${userVotes[`reply_${reply.id}`] === "down"
-                          ? "bg-red-100 text-red-600"
-                          : "text-gray-400 hover:text-red-500"
-                          }`}
+                        className={`p-1 rounded-full ${
+                          userVotes[`reply_${reply.id}`] === "down"
+                            ? "bg-red-100 text-red-600"
+                            : "text-gray-400 hover:text-red-500"
+                        }`}
                       >
                         <ArrowDown size={18} />
                       </button>
@@ -545,20 +551,22 @@ export default function PostDetails() {
                               {new Date(reply.created_at).toLocaleString()}
                             </span>
                           </div>
-                          <div className="flex space-x-2 mt-2">
-                            <Button
-                              variant="ghost"
-                              onClick={() => handleReplyEditToggle(reply)}
-                            >
-                              <Edit3 size={16} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              onClick={() => handleReplyDelete(reply.id)}
-                            >
-                              <Trash2 size={16} />
-                            </Button>
-                          </div>
+                          {currentUserId === reply.user_id && (
+                            <div className="flex space-x-2 mt-2">
+                              <Button
+                                variant="ghost"
+                                onClick={() => handleReplyEditToggle(reply)}
+                              >
+                                <Edit3 size={16} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                onClick={() => handleReplyDelete(reply.id)}
+                              >
+                                <Trash2 size={16} />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
