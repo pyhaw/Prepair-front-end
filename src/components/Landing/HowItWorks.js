@@ -1,47 +1,40 @@
-import { Wrench, Search, ClipboardCheck, ThumbsUp } from "lucide-react";
+"use client";
+
+import { Search, FileCheck, MessageCircle } from "lucide-react";
 
 const steps = [
   {
-    id: 1,
-    title: "Describe Your Issue",
-    description: "Tell us what needs fixing, and we'll find the right professionals for you.",
-    icon: <ClipboardCheck size={40} className="text-orange-500" />,
+    icon: <Search className="w-6 h-6 text-white" />,
+    title: "Search",
+    description: "Look for fixers or post a request describing your need.",
   },
   {
-    id: 2,
-    title: "Get Matched Instantly",
-    description: "Our smart system finds the best-rated contractors in your area.",
-    icon: <Search size={40} className="text-orange-500" />,
+    icon: <MessageCircle className="w-6 h-6 text-white" />,
+    title: "Connect",
+    description: "Chat directly with experts and compare offers.",
   },
   {
-    id: 3,
-    title: "Compare & Hire",
-    description: "Browse professional profiles, read reviews, and select the best fit.",
-    icon: <Wrench size={40} className="text-orange-500" />,
-  },
-  {
-    id: 4,
-    title: "Job Done & Reviewed",
-    description: "After the job is completed, leave a review to help others choose.",
-    icon: <ThumbsUp size={40} className="text-orange-500" />,
+    icon: <FileCheck className="w-6 h-6 text-white" />,
+    title: "Hire & Review",
+    description: "Choose the best fixer, complete the task, leave feedback.",
   },
 ];
 
-const HowItWorks = () => {
+export default function HowItWorks() {
   return (
-    <section className="mt-12 px-6 text-center">
-      <h2 className="text-3xl font-bold text-gray-900">How It Works</h2>
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {steps.map((step) => (
-          <div key={step.id} className="bg-white p-6 shadow-md rounded-lg text-center">
-            <div className="flex justify-center">{step.icon}</div>
-            <h3 className="text-lg font-semibold text-gray-900 mt-4">{step.title}</h3>
-            <p className="text-gray-600">{step.description}</p>
+    <section className="py-20 px-6 bg-gray-50 text-center">
+      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">How It Works</h2>
+      <div className="flex flex-col md:flex-row justify-center gap-10 max-w-5xl mx-auto">
+        {steps.map((step, idx) => (
+          <div key={idx} className="flex flex-col items-center text-center">
+            <div className="bg-orange-500 p-4 rounded-full mb-4 shadow-md">
+              {step.icon}
+            </div>
+            <h3 className="text-xl font-semibold text-orange-700 mb-2">{step.title}</h3>
+            <p className="text-gray-700">{step.description}</p>
           </div>
         ))}
       </div>
     </section>
   );
-};
-
-export default HowItWorks;
+}

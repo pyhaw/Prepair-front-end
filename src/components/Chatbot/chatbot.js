@@ -1,178 +1,108 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Send, User, Bot, Settings } from "lucide-react";
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
+import { Send, Loader2 } from "lucide-react";
 
 export default function Chatbot() {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [chatHistory, setChatHistory] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const chatContainerRef = useRef(null);
+  const [loading, setLoading] = useState(false);
 
-  // Auto-scroll to bottom when chat history updates
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
-  }, [chatHistory]);
-
-  const handleSend = async () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
-
-    // Append user's message
-    setChatHistory((prev) => [...prev, { sender: "user", text: input }]);
-    const currentInput = input; // Save the current input
-    setInput("");
-
-    // Show typing indicator
-    setIsTyping(true);
+    const userMessage = { sender: "user", message: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setLoading(true);
 
     try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-      const response = await fetch(`${API_URL}/api/chat`, {
+      const res = await fetch("http://localhost:5001/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: currentInput }),
+        body: JSON.stringify({ message: input }),
       });
-      const data = await response.json();
 
-      // Hide typing indicator and append chatbot's reply
-      setIsTyping(false);
-      setChatHistory((prev) => [
+      const data = await res.json();
+      if (data.reply) {
+        const botMessage = { sender: "chatbot", message: data.reply };
+        setMessages((prev) => [...prev, botMessage]);
+      } else {
+        throw new Error("No reply received");
+      }
+    } catch (err) {
+      setMessages((prev) => [
         ...prev,
-        { sender: "chatbot", text: data.reply || "Sorry, no response." },
+        { sender: "chatbot", message: "⚠️ Something went wrong." },
       ]);
-    } catch (error) {
-      console.error("Chat error:", error);
-      setIsTyping(false);
-      setChatHistory((prev) => [
-        ...prev,
-        { sender: "chatbot", text: "There was an error. Please try again." },
-      ]);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+    } finally {
+      setLoading(false);
+      setInput("");
     }
   };
 
   return (
-    // Added mt-32 to offset the fixed navbar height
-    <div className="max-w-2xl mx-auto mt-32 rounded-xl overflow-hidden shadow-lg bg-white border border-gray-100">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-400 to-green-600 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center">
-          <Bot className="mr-2" size={24} />
-          <div>
-            <h2 className="text-xl font-semibold text-white">
-              Home Repair Assistant
-            </h2>
-            <p className="text-green-50 text-sm">
-              Ask me anything about home repairs
-            </p>
-          </div>
-        </div>
-        {/* Extra icon added for settings */}
-        <button className="text-green-50 hover:text-white transition">
-          <Settings size={24} />
-        </button>
-      </div>
+    <div className="pt-40 px-4 md:px-8 bg-orange-50 min-h-screen flex justify-center items-start">
+      <Card className="w-full max-w-3xl border border-orange-200 shadow-md">
+        <CardContent className="p-6 space-y-4">
+          <h2 className="text-2xl font-bold text-orange-700 flex items-center gap-2">
+            🛠️ Ask Our Home Repair Expert
+          </h2>
 
-      {/* Chat container */}
-      <div
-        ref={chatContainerRef}
-        className="p-4 h-96 overflow-y-auto bg-gray-50 flex flex-col space-y-4"
-      >
-        {chatHistory.length === 0 ? (
-          <div className="text-center text-gray-400 mt-4">
-            <Bot size={48} className="mx-auto mb-2 text-green-400" />
-            <p>How can I help with your home repair needs today?</p>
-          </div>
-        ) : (
-          chatHistory.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                msg.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
+          <div className="h-[500px] overflow-y-auto bg-white border border-orange-100 rounded-md p-4 space-y-3">
+            {messages.map((msg, idx) => (
               <div
-                className={`max-w-[80%] px-4 py-3 rounded-2xl flex items-center space-x-2
-                  ${
-                    msg.sender === "user"
-                      ? "bg-green-500 text-white rounded-tr-none"
-                      : "bg-white text-gray-800 shadow-sm border border-gray-100 rounded-tl-none"
-                  }`}
+                key={idx} // ✅ Add this line
+                className={`w-fit max-w-sm px-4 py-3 rounded-2xl break-words whitespace-pre-wrap text-sm
+      ${
+        msg.sender === "user"
+          ? "bg-orange-500 text-white rounded-tr-none ml-auto"
+          : "bg-orange-50 text-gray-800 border border-orange-200 rounded-tl-none mr-auto"
+      }`}
               >
-                {msg.sender === "chatbot" && (
-                  <Bot size={20} className="mt-1 text-green-500" />
-                )}
-                {/* Render message text as Markdown */}
-                <div className="break-words">
-                  <ReactMarkdown>{msg.text}</ReactMarkdown>
-                </div>
-                {msg.sender === "user" && (
-                  <User size={20} className="mt-1 text-white" />
-                )}
+                <ReactMarkdown
+                  components={{
+                    p: ({ node, ...props }) => (
+                      <p className="whitespace-pre-wrap text-sm" {...props} />
+                    ),
+                  }}
+                >
+                  {msg.message}
+                </ReactMarkdown>
               </div>
-            </div>
-          ))
-        )}
+            ))}
 
-        {/* Typing indicator */}
-        {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none shadow-sm border border-gray-100 flex items-center space-x-2">
-              <Bot size={20} className="text-green-500" />
-              <div className="flex space-x-1">
-                <div
-                  className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"
-                  style={{ animationDelay: "0s" }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.2s" }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.4s" }}
-                ></div>
+            {loading && (
+              <div className="flex items-center gap-2 text-orange-500 text-sm">
+                <Loader2 className="animate-spin w-4 h-4" />
+                Generating response...
               </div>
-            </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Input area */}
-      <div className="p-4 border-t border-gray-100 bg-white">
-        <div className="flex items-center space-x-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your question here..."
-            className="flex-grow py-3 px-4 bg-gray-50 border border-gray-200 rounded-full text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim()}
-            className={`p-3 rounded-full ${
-              input.trim()
-                ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-gray-200 text-gray-400"
-            } transition-colors duration-200`}
-          >
-            <Send size={20} />
-          </button>
-        </div>
-      </div>
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !e.shiftKey && sendMessage()
+              }
+              placeholder="Describe your issue (e.g., leaking pipe)…"
+              className="flex-1 min-h-[50px] max-h-[120px] resize-none"
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={loading || !input.trim()}
+              className="shrink-0"
+            >
+              <Send className="w-4 h-4 mr-1" />
+              Send
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

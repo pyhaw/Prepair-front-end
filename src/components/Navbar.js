@@ -132,7 +132,7 @@ const Navbar = () => {
             <Link href="/make-request">Make a Request</Link>
           </Button>
           <Button className="bg-blue-500 text-white hover:bg-blue-600 text-lg px-5 py-2.5">
-            <Link href="/chatbot">Ask Pairy the Chatbot</Link>
+            <Link href="/chatbot">Access Pairy</Link>
           </Button>
           {!isLoggedIn && (
             <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-50 text-lg px-5 py-2.5">
@@ -187,7 +187,7 @@ const Navbar = () => {
               Make a Request
             </Link>
             <Link href="/chatbot" className="text-blue-500 hover:text-blue-700 text-lg" onClick={() => setIsOpen(false)}>
-              Ask Pairy the Chatbot
+              Acess Pairy
             </Link>
             {!isLoggedIn && (
               <Link href="/LoginPage" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>

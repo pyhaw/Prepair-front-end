@@ -152,7 +152,7 @@ export default function MakeRequest({ existingRequest = null }) {
   };
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
       <div className="max-w-4xl mx-auto mt-32 p-6">
         <h2 className="text-4xl font-bold text-black text-center mb-5">

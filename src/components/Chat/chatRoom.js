@@ -2,9 +2,9 @@
 import { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5001"); // You can use NEXT_PUBLIC_SOCKET_URL if needed
+const socket = io("http://localhost:5001");
 
-export default function ChatRoom({ currentUserId, targetUserId, username }) {
+export default function ChatRoom({ currentUserId, targetUserId, username, targetUsername }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -50,9 +50,7 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:5001/api/chat-history/${roomId}`
-        );
+        const res = await fetch(`http://localhost:5001/api/chat-history/${roomId}`);
         const data = await res.json();
 
         if (Array.isArray(data)) {
@@ -68,7 +66,6 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
           }));
           setMessages(formatted);
           scrollToBottom();
-          console.log("Fetched chat history from API:", data);
         }
       } catch (err) {
         console.error("❌ Failed to load chat history:", err);
@@ -93,8 +90,7 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
       message: message.trim(),
     };
 
-    socket.emit("send_message", msgData); // Let server handle and broadcast
-
+    socket.emit("send_message", msgData);
     setMessage("");
     scrollToBottom();
   };
@@ -119,24 +115,23 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-6 py-3 bg-white border-b border-gray-200 flex items-center">
-        {/* Avatar */}
         <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-          {targetUserId.toString().charAt(0)}
+          {targetUsername?.charAt(0) || targetUserId.toString().charAt(0)}
         </div>
-
-        {/* User Info */}
         <div>
-          <h2 className="font-medium text-black">User {targetUserId}</h2>
+          <h2 className="font-medium text-black">
+            {targetUsername || `User ${targetUserId}`}
+          </h2>
           <p className="text-xs text-green-600">Online</p>
         </div>
       </div>
 
-      {/* Chat Messages */}
+      {/* Messages */}
       <div className="flex-grow overflow-y-auto p-4 bg-gray-50">
         {Object.entries(groupedMessages).map(([date, msgs]) => (
           <div key={date}>
             <div className="flex justify-center my-3">
-              <span className="text-xs bg-orange-600 border-t border-gray-200 text-gray-700 px-2 py-1 rounded">
+              <span className="text-xs bg-orange-600 text-white px-2 py-1 rounded">
                 {new Date(date).toLocaleDateString(undefined, {
                   weekday: "long",
                   month: "short",
@@ -150,15 +145,13 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
               return (
                 <div
                   key={idx}
-                  className={`mb-4 flex ${
-                    isSender ? "justify-end" : "justify-start"
-                  }`}
+                  className={`mb-4 flex ${isSender ? "justify-end" : "justify-start"}`}
                 >
                   <div className="max-w-xs lg:max-w-md">
                     <div
                       className={`px-4 py-2 rounded-lg ${
                         isSender
-                          ? "bg-orange-600 border-t border-gray-200 text-white rounded-br-none"
+                          ? "bg-orange-600 text-white rounded-br-none"
                           : "bg-gray-500 text-white rounded-bl-none"
                       }`}
                     >
@@ -189,12 +182,11 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
             typing...
           </div>
         )}
-
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-orange-600 border-t border-gray-200 border-t border-orange-400">
+      <div className="p-4 bg-orange-600 border-t border-orange-400">
         <div className="flex">
           <input
             value={message}
@@ -208,7 +200,7 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
             disabled={!message.trim()}
             className={`px-6 rounded-r-lg ${
               message.trim()
-                ? "bg-orange-600 border-t border-gray-200 hover:bg-orange-600 border-t border-gray-200"
+                ? "bg-orange-600 hover:bg-orange-500"
                 : "bg-orange-400 cursor-not-allowed"
             } text-white transition`}
           >

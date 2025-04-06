@@ -33,13 +33,24 @@ export default function ChatPage() {
 
   // ✅ Handle pre-selected partner user from query
   useEffect(() => {
-    if (partnerId) {
-      setSelectedUser({
-        id: parseInt(partnerId),
-        name: `User ${partnerId}`,
-        avatar: partnerId.charAt(0),
-      });
-    }
+    const fetchPartnerDetails = async () => {
+      if (!partnerId) return;
+  
+      try {
+        const res = await fetch(`http://localhost:5001/api/users/${partnerId}`);
+        const data = await res.json();
+  
+        setSelectedUser({
+          id: parseInt(partnerId),
+          name: data.username || `User ${partnerId}`,
+          avatar: data.profilePicture || partnerId.charAt(0),
+        });
+      } catch (err) {
+        console.error("❌ Failed to fetch partner user info:", err);
+      }
+    };
+  
+    fetchPartnerDetails();
   }, [partnerId]);
 
   if (!currentUserId) {
