@@ -111,7 +111,7 @@ export default function Requests() {
   };
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
       <div className="max-w-6xl mx-auto mt-32 p-6">
         <h2 className="text-4xl font-bold mb-6 text-black">

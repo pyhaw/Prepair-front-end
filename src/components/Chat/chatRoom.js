@@ -2,9 +2,9 @@
 import { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5001"); // You can use NEXT_PUBLIC_SOCKET_URL if needed
+const socket = io("http://localhost:5001");
 
-export default function ChatRoom({ currentUserId, targetUserId, username }) {
+export default function ChatRoom({ currentUserId, targetUserId, username, targetUsername }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -66,7 +66,6 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
           }));
           setMessages(formatted);
           scrollToBottom();
-          console.log("Fetched chat history from API:", data);
         }
       } catch (err) {
         console.error("❌ Failed to load chat history:", err);
@@ -91,8 +90,7 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
       message: message.trim(),
     };
 
-    socket.emit("send_message", msgData); // Let server handle and broadcast
-
+    socket.emit("send_message", msgData);
     setMessage("");
     scrollToBottom();
   };
@@ -116,22 +114,24 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 py-3 bg-gray-800 border-b border-gray-700 flex items-center">
-        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white mr-3">
-          {targetUserId.toString().charAt(0)}
+      <div className="px-6 py-3 bg-white border-b border-gray-200 flex items-center">
+        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+          {targetUsername?.charAt(0) || targetUserId.toString().charAt(0)}
         </div>
         <div>
-          <h2 className="font-medium text-white">User {targetUserId}</h2>
-          <p className="text-xs text-gray-400">Online</p>
+          <h2 className="font-medium text-black">
+            {targetUsername || `User ${targetUserId}`}
+          </h2>
+          <p className="text-xs text-green-600">Online</p>
         </div>
       </div>
 
-      {/* Chat Messages */}
-      <div className="flex-grow overflow-y-auto p-4 bg-gray-900">
+      {/* Messages */}
+      <div className="flex-grow overflow-y-auto p-4 bg-gray-50">
         {Object.entries(groupedMessages).map(([date, msgs]) => (
           <div key={date}>
             <div className="flex justify-center my-3">
-              <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded">
+              <span className="text-xs bg-orange-600 text-white px-2 py-1 rounded">
                 {new Date(date).toLocaleDateString(undefined, {
                   weekday: "long",
                   month: "short",
@@ -145,16 +145,14 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
               return (
                 <div
                   key={idx}
-                  className={`mb-4 flex ${
-                    isSender ? "justify-end" : "justify-start"
-                  }`}
+                  className={`mb-4 flex ${isSender ? "justify-end" : "justify-start"}`}
                 >
                   <div className="max-w-xs lg:max-w-md">
                     <div
                       className={`px-4 py-2 rounded-lg ${
                         isSender
-                          ? "bg-blue-600 text-white rounded-br-none"
-                          : "bg-gray-700 text-white rounded-bl-none"
+                          ? "bg-orange-600 text-white rounded-br-none"
+                          : "bg-gray-500 text-white rounded-bl-none"
                       }`}
                     >
                       {msg.message}
@@ -162,7 +160,7 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
                     <div
                       className={`text-xs mt-1 ${
                         isSender ? "text-right" : "text-left"
-                      } text-gray-400`}
+                      } text-gray-700`}
                     >
                       {msg.time}
                       {isSender && <span className="ml-1">✓</span>}
@@ -175,7 +173,7 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
         ))}
 
         {isTyping && (
-          <div className="flex items-center text-sm text-gray-400 my-2">
+          <div className="flex items-center text-sm text-gray-700 my-2">
             <div className="typing-animation mr-2">
               <span></span>
               <span></span>
@@ -184,27 +182,26 @@ export default function ChatRoom({ currentUserId, targetUserId, username }) {
             typing...
           </div>
         )}
-
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-gray-800 border-t border-gray-700">
+      <div className="p-4 bg-orange-600 border-t border-orange-400">
         <div className="flex">
           <input
             value={message}
             onChange={handleTyping}
             onKeyPress={(e) => e.key === "Enter" && sendMessage()}
             placeholder="Type a message..."
-            className="flex-1 bg-gray-700 rounded-l-lg px-4 py-3 text-white outline-none"
+            className="flex-1 bg-white rounded-l-lg px-4 py-3 text-black outline-none"
           />
           <button
             onClick={sendMessage}
             disabled={!message.trim()}
             className={`px-6 rounded-r-lg ${
               message.trim()
-                ? "bg-blue-600 hover:bg-blue-700"
-                : "bg-gray-600 cursor-not-allowed"
+                ? "bg-orange-600 hover:bg-orange-500"
+                : "bg-orange-400 cursor-not-allowed"
             } text-white transition`}
           >
             Send
