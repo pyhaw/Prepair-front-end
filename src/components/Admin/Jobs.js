@@ -164,7 +164,7 @@ export default function AllJobPostings() {
       client_id: job.client_id,
     }).toString();
 
-    router.push(`/admin/job-postings/details?${queryParams}`);
+    router.push(`/requests/details?${queryParams}`);
   };
 
   // Open the confirmation popup

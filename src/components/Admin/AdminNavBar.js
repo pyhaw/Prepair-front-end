@@ -114,14 +114,6 @@ const AdminNavbar = () => {
             <Link href="/discussion">Discussion</Link>
           </Button>
 
-          <Button
-            variant="ghost"
-            className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-            asChild
-          >
-            <Link href="/requests">Requests</Link>
-          </Button>
-
           {isLoggedIn ? (
             <>
               {/* ✅ Show View Profile button when logged in */}

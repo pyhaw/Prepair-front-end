@@ -37,6 +37,7 @@ export default function PostDetails() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
   const [currentUserId, setCurrentUserId] = useState(null);
+  const role = localStorage.getItem("role");
 
   useEffect(() => {
     const storedId = localStorage.getItem("userId");
@@ -393,7 +394,7 @@ export default function PostDetails() {
                 {post.title}
               </h1>
               <div className="flex space-x-2">
-                {currentUserId === post.client_id && (
+                {(currentUserId === post.client_id || role === "admin") && (
                   <>
                     <Button variant="ghost" onClick={handlePostEditToggle}>
                       <Edit3 size={20} />

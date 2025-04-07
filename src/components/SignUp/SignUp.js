@@ -104,7 +104,7 @@ const SignUp = () => {
             onChange={handleChange}
             className="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 dark:text-white"
           >
-            <option value="admin">Admin</option>
+            
             <option value="client">Client</option>
             <option value="fixer">Fixer</option>
           </select>
