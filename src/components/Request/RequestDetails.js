@@ -756,7 +756,7 @@ export default function RequestDetails() {
                             </div>
                           ) : null}
                         </>
-                      )}{" "}
+                      )}
                     </div>
                   ))}
                 </div>
