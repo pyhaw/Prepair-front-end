@@ -27,18 +27,24 @@ const Navbar = () => {
       }
 
       try {
-        const loginResponse = await fetch("http://localhost:5001/api/auth/verify", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const loginResponse = await fetch(
+          "http://localhost:5001/api/auth/verify",
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (loginResponse.ok) {
           setIsLoggedIn(true);
 
-          const adminResponse = await fetch("http://localhost:5001/api/admin/verify", {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const adminResponse = await fetch(
+            "http://localhost:5001/api/admin/verify",
+            {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
 
           setIsAdmin(adminResponse.ok);
         } else {
@@ -93,13 +99,22 @@ const Navbar = () => {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center space-x-4">
-          <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5">
-            <Link href="/activeJobs">Active Jobs</Link>
+          <Button
+            variant="ghost"
+            className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
+          >
+            <Link href="/activeJobs">My Jobs</Link>
           </Button>
-          <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5">
+          <Button
+            variant="ghost"
+            className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
+          >
             <Link href="/discussion">Discussion</Link>
           </Button>
-          <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5">
+          <Button
+            variant="ghost"
+            className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
+          >
             <Link href="/requests">View Requests</Link>
           </Button>
 
@@ -115,15 +130,24 @@ const Navbar = () => {
 
           {isLoggedIn ? (
             <>
-              <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5">
+              <Button
+                variant="ghost"
+                className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
+              >
                 <Link href="/profilePage">View Profile</Link>
               </Button>
-              <Button onClick={handleLogout} className="bg-red-500 text-white hover:bg-red-600 text-lg px-5 py-2.5">
+              <Button
+                onClick={handleLogout}
+                className="bg-red-500 text-white hover:bg-red-600 text-lg px-5 py-2.5"
+              >
                 Logout
               </Button>
             </>
           ) : (
-            <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5">
+            <Button
+              variant="ghost"
+              className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
+            >
               <Link href="/SignUpPage">Register</Link>
             </Button>
           )}
@@ -135,14 +159,20 @@ const Navbar = () => {
             <Link href="/chatbot">Access Pairy</Link>
           </Button>
           {!isLoggedIn && (
-            <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-50 text-lg px-5 py-2.5">
+            <Button
+              variant="outline"
+              className="border-orange-500 text-orange-500 hover:bg-orange-50 text-lg px-5 py-2.5"
+            >
               <Link href="/LoginPage">Login</Link>
             </Button>
           )}
         </div>
 
         {/* Mobile Hamburger */}
-        <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-gray-700">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="md:hidden text-gray-700"
+        >
           {isOpen ? <X size={36} /> : <Menu size={36} />}
         </button>
       </div>
@@ -151,10 +181,18 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-white px-6 py-4 shadow-inner">
           <div className="flex flex-col space-y-4">
-            <Link href="/discussion" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>
+            <Link
+              href="/discussion"
+              className="text-gray-700 hover:text-gray-900 text-lg"
+              onClick={() => setIsOpen(false)}
+            >
               Discussion
             </Link>
-            <Link href="/requests" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>
+            <Link
+              href="/requests"
+              className="text-gray-700 hover:text-gray-900 text-lg"
+              onClick={() => setIsOpen(false)}
+            >
               View Requests
             </Link>
 
@@ -171,26 +209,49 @@ const Navbar = () => {
 
             {isLoggedIn ? (
               <>
-                <Link href="/profilePage" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>
+                <Link
+                  href="/profilePage"
+                  className="text-gray-700 hover:text-gray-900 text-lg"
+                  onClick={() => setIsOpen(false)}
+                >
                   View Profile
                 </Link>
-                <button onClick={handleLogout} className="text-red-500 hover:text-red-700 text-lg text-left">
+                <button
+                  onClick={handleLogout}
+                  className="text-red-500 hover:text-red-700 text-lg text-left"
+                >
                   Logout
                 </button>
               </>
             ) : (
-              <Link href="/SignUpPage" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>
+              <Link
+                href="/SignUpPage"
+                className="text-gray-700 hover:text-gray-900 text-lg"
+                onClick={() => setIsOpen(false)}
+              >
                 Register
               </Link>
             )}
-            <Link href="/make-request" className="text-orange-500 hover:text-orange-700 text-lg" onClick={() => setIsOpen(false)}>
+            <Link
+              href="/make-request"
+              className="text-orange-500 hover:text-orange-700 text-lg"
+              onClick={() => setIsOpen(false)}
+            >
               Make a Request
             </Link>
-            <Link href="/chatbot" className="text-blue-500 hover:text-blue-700 text-lg" onClick={() => setIsOpen(false)}>
-              Acess Pairy
+            <Link
+              href="/chatbot"
+              className="text-blue-500 hover:text-blue-700 text-lg"
+              onClick={() => setIsOpen(false)}
+            >
+              Access Pairy
             </Link>
             {!isLoggedIn && (
-              <Link href="/LoginPage" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>
+              <Link
+                href="/LoginPage"
+                className="text-gray-700 hover:text-gray-900 text-lg"
+                onClick={() => setIsOpen(false)}
+              >
                 Login
               </Link>
             )}
