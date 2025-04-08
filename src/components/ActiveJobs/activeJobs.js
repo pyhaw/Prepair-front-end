@@ -32,7 +32,8 @@ export default function ActiveJobs() {
 
         if (role === "client") {
           // Fetch job postings created by the client
-          endpoint = `${API_URL}/api/job-postings/active/${userId}`;
+          console.log("Fetching for client");
+          endpoint = `${API_URL}/api/job-postings/${userId}`;
         } else if (role === "fixer") {
           // Fetch jobs the fixer has bid on
           endpoint = `${API_URL}/api/job-bids?fixer_id=${userId}`;
@@ -51,13 +52,7 @@ export default function ActiveJobs() {
         }
 
         const data = await response.json();
-        const activeJobs = data.filter((job) => job.status === "in_progress");
-        setJobs(activeJobs);
-
-        if (activeJobs.length === 0) {
-          setError("No active jobs");
-        }
-
+        setJobs(data);
       } catch (error) {
         setError("No active jobs");
       } finally {
