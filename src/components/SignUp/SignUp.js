@@ -10,7 +10,7 @@ const SignUp = () => {
     username: "",
     email: "",
     password: "",
-    role: "admin",
+    role: "client",
   });
 
   const [error, setError] = useState(""); // State to manage error messages
