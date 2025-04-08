@@ -36,7 +36,20 @@ export default function RequestDetails() {
     max_budget: searchParams.get("max_budget") || "N/A",
     notify: searchParams.get("notify") === "true",
     jobStatus: searchParams.get("status") || "",
+    images: (() => {
+      const encodedImages = searchParams.get("images");
+      try {
+        return encodedImages ? JSON.parse(decodeURIComponent(encodedImages)) : [];
+      } catch (e) {
+        return [];
+      }
+    })(),
   });
+
+  useEffect(() => {
+    console.log(request)
+  }, [request])
+  
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
   // Fetch user data and token on component mount
@@ -255,13 +268,15 @@ export default function RequestDetails() {
       urgency: request.urgency,
       min_budget: request.min_budget || "",
       max_budget: request.max_budget || "",
-      ownerId: userId, // include owner id
+      ownerId: userId,
       status: request.status,
       date: request.date,
+      images: encodeURIComponent(JSON.stringify(request.images || [])), 
     }).toString();
-
+  
     router.push(`/editRequest?${queryParams}`);
   };
+  
 
   const handleDelete = async (id) => {
     if (confirm("Do you want to delete job request?")) {
@@ -345,6 +360,7 @@ export default function RequestDetails() {
           </div>
         ) : (
           <>
+
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-bold text-gray-800">
                 Request Details
@@ -358,6 +374,22 @@ export default function RequestDetails() {
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md mb-6 border border-gray-200">
+            {request.images && request.images.length > 0 && (
+              <div className="mb-6 flex flex-wrap gap-4 justify-start">
+              {request.images.map((url, index) => (
+                <div
+                  key={index}
+                  className="w-[300px] h-[200px] border border-gray-300 rounded shadow-md flex items-center justify-center bg-white"
+                >
+                  <img
+                    src={url}
+                    alt={`Uploaded image ${index + 1}`}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+              ))}
+            </div>
+            )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="mb-4">
                   <label className="block font-semibold mb-1 text-gray-700">

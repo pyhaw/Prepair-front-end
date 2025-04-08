@@ -70,6 +70,7 @@ export default function AllJobPostings() {
         status: job.status,
         notify: job.notify,
         created_at: job.created_at,
+        images: Array.isArray(job.images) ? job.images : [], 
       }));
 
       setJobPostings(formattedJobPostings);
@@ -162,8 +163,10 @@ export default function AllJobPostings() {
       status: job.status,
       notify: job.notify,
       client_id: job.client_id,
+      images: encodeURIComponent(JSON.stringify(job.images || [])), 
     }).toString();
-
+    
+    console.log(job)
     router.push(`/requests/details?${queryParams}`);
   };
 

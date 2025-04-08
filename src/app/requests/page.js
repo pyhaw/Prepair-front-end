@@ -58,7 +58,6 @@ export default function Requests() {
           date: job.date,
         }));
 
-        console.log(formattedRequests);
         setRequests(formattedRequests);
         setLoading(false);
       } catch (error) {
@@ -105,10 +104,11 @@ export default function Requests() {
       max_budget: request.max_budget || "",
       status: request.status,
       date: request.date,
+      images: encodeURIComponent(JSON.stringify(request.images || [])), // ✅ Add this line
     }).toString();
-
     router.push(`/requests/details?${queryParams}`);
   };
+  
 
   return (
     <div className="flex flex-col min-h-screen">

@@ -39,6 +39,19 @@ export default function EditRequest() {
     const formattedDate = dateFromParams
       ? new Date(dateFromParams).toISOString().split("T")[0]
       : "";
+  
+    const encodedImages = searchParams.get("images");
+    let parsedImages = [];
+  
+    try {
+      parsedImages = encodedImages
+        ? JSON.parse(decodeURIComponent(encodedImages))
+        : [];
+    } catch (err) {
+      console.error("❌ Failed to parse images from query params", err);
+    }
+  
+    // Set form data
     setFormData({
       id: searchParams.get("id") || "",
       client_id: searchParams.get("client_id"),
@@ -52,8 +65,12 @@ export default function EditRequest() {
       notify: searchParams.get("notify") === "true",
       jobStatus: searchParams.get("status") || "",
     });
-    console.log(formattedDate);
+  
+    // Set image state
+    setImageFiles(parsedImages); // used when saving
+    setImagePreviews(parsedImages); // used for UI preview
   }, []);
+  
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -99,6 +116,10 @@ export default function EditRequest() {
     }
   };
 
+  useEffect(() => {
+    console.log(imageFiles)
+  }, [imageFiles])
+
   const removeImage = (index) => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
@@ -119,6 +140,8 @@ export default function EditRequest() {
       notify: formData.notify,
       images: imageFiles,
     };
+
+    console.log(imageFiles)
 
     try {
       const response = await fetch(`${API_URL}/api/edit-postings`, {
