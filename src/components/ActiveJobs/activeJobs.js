@@ -32,7 +32,7 @@ export default function ActiveJobs() {
 
         if (role === "client") {
           // Fetch job postings created by the client
-          endpoint = `${API_URL}/api/job-postings/${userId}`;
+          endpoint = `${API_URL}/api/job-postings/active/${userId}`;
         } else if (role === "fixer") {
           // Fetch jobs the fixer has bid on
           endpoint = `${API_URL}/api/job-bids?fixer_id=${userId}`;
@@ -51,7 +51,13 @@ export default function ActiveJobs() {
         }
 
         const data = await response.json();
-        setJobs(data);
+        const activeJobs = data.filter((job) => job.status === "in_progress");
+        setJobs(activeJobs);
+
+        if (activeJobs.length === 0) {
+          setError("No active jobs");
+        }
+
       } catch (error) {
         setError("No active jobs");
       } finally {
@@ -61,6 +67,48 @@ export default function ActiveJobs() {
 
     fetchActiveJobs();
   }, []);
+
+  const handleMarkCompleted = async (job) => {
+    const token = localStorage.getItem("token");
+
+    if (!job.accepted_bid_id) {
+      alert("No accepted bid found for this job.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/complete-job`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          bidId: job.accepted_bid_id,
+          jobId: job.id,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Job marked as completed!");
+
+        const updatedJob = { ...job, status: "completed" };
+
+        setJobs((prevJobs) =>
+          prevJobs.map((j) => (j.id === job.id ? updatedJob : j))
+        );
+
+        setShowModalForJob(updatedJob);
+      } else {
+        alert(data.error || "Failed to complete job.");
+      }
+    } catch (err) {
+      alert("Something went wrong. Please try again.");
+      console.error(err);
+    }
+  };
 
   const handleViewDetails = (job) => {
     const userId = localStorage.getItem("userId");
@@ -173,15 +221,28 @@ export default function ActiveJobs() {
                   ? `$${job.min_budget} - $${job.max_budget}`
                   : "N/A"}
               </p>
-              <p className="text-black">
-                <strong>🔧 Status:</strong> {job.status.toUpperCase()}
-              </p>
+              {userRole === "client" && job.status === "in_progress" && (
+                <button
+                  className="mt-2 bg-blue-600 text-white px-4 py-2 rounded w-full block text-center"
+                  onClick={() => handleMarkCompleted(job)}
+                >
+                  Mark as Completed
+                </button>
+              )}
               <button
                 className="mt-2 bg-orange-500 text-white px-4 py-2 rounded w-full block text-center"
                 onClick={() => handleViewDetails(job)}
               >
                 View Details
               </button>
+              {userRole === "client" && job.status === "completed" && (
+                <button
+                  className="mt-2 bg-green-600 text-white px-4 py-2 rounded w-full block text-center"
+                  onClick={() => setShowModalForJob(job)}
+                >
+                  Rate Fixer
+                </button>
+              )}
             </div>
           ))}
         </div>

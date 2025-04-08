@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import RateFixerModal from "@/components/RateFixer/RateFixerModal";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 export default function RequestDetails() {
@@ -20,6 +21,7 @@ export default function RequestDetails() {
   const [editingBidId, setEditingBidId] = useState(null);
   const [editBidAmount, setEditBidAmount] = useState("");
   const [editBidDescription, setEditBidDescription] = useState("");
+  const [showModalForJob, setShowModalForJob] = useState(null);
 
   // Get request details from search params
   const [request, setRequest] = useState({
@@ -211,13 +213,17 @@ export default function RequestDetails() {
   const handleCompleteBid = async (bid) => {
     try {
       const token = localStorage.getItem("token");
+
       const response = await fetch(`${API_URL}/api/complete-job`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ bidId: bid.id, jobId: bid.job_posting_id }), // Include necessary bid data
+        body: JSON.stringify({
+          bidId: bid.id,
+          jobId: bid.job_posting_id,
+        }),
       });
 
       if (!response.ok) {
@@ -225,13 +231,19 @@ export default function RequestDetails() {
       }
 
       const data = await response.json();
-      console.log("Job completed:", data); // Handle the response properly
+      console.log("✅ Job completed:", data);
+
+      setShowModalForJob({
+        id: bid.job_posting_id,
+        fixer: { id: bid.fixer_id },
+      });
+
       setIsCompleted(true);
       setRequest((prev) => ({ ...prev, jobStatus: "completed" }));
     } catch (error) {
-      console.error("Error completeing job:", error); // Log errors for debugging
+      console.error("🔥 Error completing job:", error);
     }
-  };
+  }; 
 
   const handleEdit = (request) => {
     const queryParams = new URLSearchParams({
@@ -793,6 +805,16 @@ export default function RequestDetails() {
           </>
         )}
       </div>
+      {showModalForJob && (
+  <RateFixerModal
+    fixer={showModalForJob.fixer}
+    jobId={showModalForJob.id}
+    onClose={() => {
+      console.log("↩️ Modal unmounted");
+      setShowModalForJob(null);
+    }}
+  />
+)}
     </div>
   );
 }
