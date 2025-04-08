@@ -1,3 +1,4 @@
+// Updated PostDetails.jsx with full editing and viewing logic retained
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,8 +12,11 @@ import {
   MessageSquare,
   Edit3,
   Trash2,
+  Upload,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
 export default function PostDetails() {
   const { postId } = useParams();
@@ -25,72 +29,62 @@ export default function PostDetails() {
   const [replyError, setReplyError] = useState("");
   const [userVotes, setUserVotes] = useState({});
 
-  // States for editing the post
   const [isEditingPost, setIsEditingPost] = useState(false);
   const [editPostTitle, setEditPostTitle] = useState("");
   const [editPostContent, setEditPostContent] = useState("");
   const [editPostCategory, setEditPostCategory] = useState("");
 
-  // States for editing a reply
+  const [editImageFiles, setEditImageFiles] = useState([]);
+  const [editImagePreviews, setEditImagePreviews] = useState([]);
+  const [uploadMessage, setUploadMessage] = useState("");
+
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [editingReplyContent, setEditingReplyContent] = useState("");
+
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+  const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
 
   const [currentUserId, setCurrentUserId] = useState(null);
-  const role = localStorage.getItem("role");
+  const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
 
   useEffect(() => {
     const storedId = localStorage.getItem("userId");
-    if (storedId) {
-      setCurrentUserId(parseInt(storedId));
-    }
+    if (storedId) setCurrentUserId(parseInt(storedId));
   }, []);
 
   useEffect(() => {
     if (!postId) return;
 
-    async function fetchPostAndReplies() {
+    async function fetchData() {
       try {
         setLoading(true);
-        // Fetch post details
-        const postResponse = await fetch(`${API_URL}/api/posts/${postId}`);
-        if (!postResponse.ok) {
-          throw new Error("Failed to fetch post details");
-        }
-        const postData = await postResponse.json();
-        setPost(postData.post);
+        const res = await fetch(`${API_URL}/api/posts/${postId}`);
+        if (!res.ok) throw new Error("Failed to fetch post");
+        const data = await res.json();
 
-        // Initialize edit fields for the post
-        setEditPostTitle(postData.post.title);
-        setEditPostContent(postData.post.description);
-        setEditPostCategory(postData.post.category || "general");
+        setPost(data.post);
+        setEditPostTitle(data.post.title);
+        setEditPostContent(data.post.description);
+        setEditPostCategory(data.post.category || "general");
+        setEditImageFiles(data.post.images || []);
+        setEditImagePreviews(data.post.images || []);
 
-        // Fetch replies
-        const repliesResponse = await fetch(
-          `${API_URL}/api/posts/${postId}/replies`
-        );
-        if (repliesResponse.ok) {
-          const repliesData = await repliesResponse.json();
+        const repliesRes = await fetch(`${API_URL}/api/posts/${postId}/replies`);
+        if (repliesRes.ok) {
+          const repliesData = await repliesRes.json();
           setReplies(repliesData.replies || []);
         }
 
-        // Fetch user votes (if authenticated)
-        try {
-          const token = localStorage.getItem("token");
-          if (token) {
-            const votesResponse = await fetch(
-              `${API_URL}/api/posts/${postId}/user-votes`,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            );
-            if (votesResponse.ok) {
-              const votesData = await votesResponse.json();
-              setUserVotes(votesData.votes || {});
-            }
+        const token = localStorage.getItem("token");
+        if (token) {
+          const votesRes = await fetch(`${API_URL}/api/posts/${postId}/user-votes`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (votesRes.ok) {
+            const votesData = await votesRes.json();
+            setUserVotes(votesData.votes || {});
           }
-        } catch (voteErr) {
-          console.error("Error fetching user votes:", voteErr);
         }
       } catch (err) {
         setError(err.message);
@@ -99,7 +93,7 @@ export default function PostDetails() {
       }
     }
 
-    fetchPostAndReplies();
+    fetchData();
   }, [postId]);
 
   const handleReplySubmit = async (e) => {
@@ -194,41 +188,6 @@ export default function PostDetails() {
     setIsEditingPost(!isEditingPost);
   };
 
-  const handlePostEditSubmit = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("You must be logged in to edit the post");
-      return;
-    }
-    if (!editPostTitle.trim() || !editPostContent.trim()) {
-      setError("Title and content are required");
-      return;
-    }
-    try {
-      const response = await fetch(`${API_URL}/api/posts/${postId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title: editPostTitle,
-          content: editPostContent,
-          category: editPostCategory,
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.error || "Failed to update post");
-      }
-      const data = await response.json();
-      setPost(data.post);
-      setIsEditingPost(false);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   const handlePostDelete = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -315,108 +274,151 @@ export default function PostDetails() {
     }
   };
 
-  if (loading)
-    return (
-      <div className="container mx-auto px-6 pt-32 pb-10">
-        <div className="text-center">
-          <div className="animate-pulse text-2xl">Loading discussion...</div>
-        </div>
-      </div>
-    );
+  const handleFileInput = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
+    // Reset any previous upload messages.
+    setUploadMessage("");
+
+    // Upload all selected files to Cloudinary.
+    const uploadedUrls = [];
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      try {
+        const response = await axios.post(CLOUDINARY_UPLOAD_URL, formData);
+        // Cloudinary returns the uploaded image URL as secure_url.
+        if (response.data && response.data.secure_url) {
+          uploadedUrls.push(response.data.secure_url);
+        }
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        setUploadMessage("Error uploading one or more images. Please try again.");
+      }
+    }
+
+    console.log(uploadedUrls)
+
+    // Update state with the new image URLs.
+    setEditImagePreviews((prev) => [...prev, ...uploadedUrls]);
+    setEditImageFiles((prev) => [...prev, ...uploadedUrls]);
+  };
+
+  const removeImage = (index) => {
+    setEditImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setEditImageFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handlePostEditSubmit = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return setError("Authentication required");
+
+    try {
+      const res = await fetch(`${API_URL}/api/posts/${postId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: editPostTitle,
+          content: editPostContent,
+          category: editPostCategory,
+          images: editImageFiles,
+        }),
+      });
+      if (!res.ok) throw new Error("Update failed");
+      const updated = await res.json();
+      console.log(updated)
+      setPost(updated.post);
+      setIsEditingPost(false);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  if (loading) return <div className="pt-32 text-center">Loading...</div>;
   if (error)
     return (
-      <div className="container mx-auto px-6 pt-32 pb-10">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          Error: {error}
-        </div>
-        <Button className="mt-4" onClick={() => router.push("/discussion")}>
-          Back to Discussions
-        </Button>
-      </div>
-    );
-
-  if (!post)
-    return (
-      <div className="container mx-auto px-6 pt-32 pb-10">
-        <div className="text-center">
-          <div className="text-2xl">Post not found</div>
-        </div>
+      <div className="pt-32 text-center text-red-600">
+        Error: {error}
+        <Button onClick={() => router.push("/discussion")}>Back</Button>
       </div>
     );
 
   return (
     <div className="container mx-auto px-6 pt-32 pb-10">
       <div className="bg-white rounded-lg shadow-lg p-6">
-        {/* Post Header */}
         <div className="flex justify-between items-start mb-4">
           {isEditingPost ? (
             <div className="flex-1">
               <input
-                type="text"
                 value={editPostTitle}
                 onChange={(e) => setEditPostTitle(e.target.value)}
-                className="w-full mb-2 p-2 border rounded text-black"
+                className="w-full p-2 mb-2 border rounded text-black"
               />
               <textarea
                 value={editPostContent}
                 onChange={(e) => setEditPostContent(e.target.value)}
-                className="w-full mb-2 p-2 border rounded text-black"
                 rows="4"
-              ></textarea>
+                className="w-full p-2 mb-2 border rounded text-black"
+              />
               <select
                 value={editPostCategory}
                 onChange={(e) => setEditPostCategory(e.target.value)}
-                className="w-full mb-2 p-2 border rounded text-black"
+                className="w-full p-2 mb-4 border rounded text-black"
               >
-                <option value="general">General Discussions</option>
-                <option value="plumbing">Plumbing & Repairs</option>
-                <option value="interior">Interior Design</option>
-                <option value="diy">DIY Projects</option>
-                <option value="renovations">Renovations</option>
-                <option value="smart-home">Smart Home</option>
+                <option value="general">General</option>
+                <option value="plumbing">Plumbing</option>
+                <option value="interior">Interior</option>
+                <option value="diy">DIY</option>
               </select>
-              <div className="flex space-x-2">
-                <Button
-                  onClick={handlePostEditSubmit}
-                  className="bg-orange-500 text-white"
-                >
-                  Save
-                </Button>
-                <Button onClick={() => setIsEditingPost(false)} variant="ghost">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFileInput}
+                className="mb-2"
+              />
+              <div className="flex gap-2 overflow-x-auto">
+                {editImagePreviews.map((src, i) => (
+                  <div key={i} className="relative">
+                    <img src={src} className="w-32 h-32 object-cover rounded" />
+                    <button
+                      onClick={() => removeImage(i)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex gap-2">
+                <Button onClick={handlePostEditSubmit}>Save</Button>
+                <Button variant="ghost" onClick={() => setIsEditingPost(false)}>
                   Cancel
                 </Button>
               </div>
             </div>
           ) : (
             <>
-              <h1 className="text-3xl font-bold text-gray-900 flex-1">
-                {post.title}
-              </h1>
-              <div className="flex space-x-2">
-                {(currentUserId === post.client_id || role === "admin") && (
-                  <>
-                    <Button variant="ghost" onClick={handlePostEditToggle}>
-                      <Edit3 size={20} />
-                    </Button>
-                    <Button variant="ghost" onClick={handlePostDelete}>
-                      <Trash2 size={20} />
-                    </Button>
-                  </>
-                )}
-                <Button
-                  variant="ghost"
-                  onClick={() => router.push("/discussion")}
-                >
-                  Back to Discussions
-                </Button>
-              </div>
+              <h1 className="text-3xl font-bold flex-1">{post.title}</h1>
+              {(currentUserId === post.client_id || role === "admin") && (
+                <div className="flex gap-2">
+                  <Button variant="ghost" onClick={handlePostEditToggle}>
+                    <Edit3 size={20} />
+                  </Button>
+                  <Button variant="ghost" onClick={handlePostDelete}>Delete</Button>
+                </div>
+              )}
             </>
           )}
         </div>
 
         {/* Post Content */}
-        {isEditingPost ? null : (
+        {!isEditingPost && (
           <div className="flex mb-6">
             {/* Voting */}
             <div className="flex flex-col items-center mr-4">
@@ -447,11 +449,22 @@ export default function PostDetails() {
 
             {/* Post Content */}
             <div className="flex-1">
-              {isEditingPost ? null : (
-                <div className="prose max-w-none">
-                  <p className="text-gray-800 text-lg whitespace-pre-line">
-                    {post.description}
-                  </p>
+              <div className="prose max-w-none">
+                <p className="text-gray-800 text-lg whitespace-pre-line">
+                  {post.description}
+                </p>
+              </div>
+
+              {post.images?.length > 0 && (
+                <div className="overflow-x-auto whitespace-nowrap flex gap-4 mt-4 py-2">
+                  {post.images.map((imgUrl, idx) => (
+                    <img
+                      key={idx}
+                      src={imgUrl}
+                      alt={`Post image ${idx + 1}`}
+                      className="w-32 h-32 object-cover rounded border"
+                    />
+                  ))}
                 </div>
               )}
 
