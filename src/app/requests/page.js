@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useStateManager } from "react-select";
 
 export default function Requests() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function Requests() {
     minBudget: "",
     maxBudget: "",
   });
+  const [userToken, setUserToken] = useState(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -25,6 +27,7 @@ export default function Requests() {
           process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
         const token = localStorage.getItem("token");
+        setUserToken(token);
         if (!token) {
           throw new Error("User is not authenticated. Please log in.");
         }
@@ -179,7 +182,30 @@ export default function Requests() {
         </div>
 
         {loading && <p className="text-black">Loading requests...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {!userToken ? (
+          <div className="py-16 text-center">
+            <div className="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-gray-100">
+              <span className="text-3xl">🔐</span>
+            </div>
+            <h3 className="text-xl font-medium text-gray-900 mb-2">
+              Please log in or create an account first.
+            </h3>
+            <button
+              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200"
+              onClick={() => router.push("/LoginPage")}
+            >
+              Go to Login Page
+            </button>
+          </div>
+        ) : (
+          error && (
+            <div className="py-16 text-center">
+              <h3 className="text-xl font-medium text-gray-900 mb-2">
+                {error}
+              </h3>
+            </div>
+          )
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRequests.length === 0 && !loading && !error ? (
