@@ -8,10 +8,13 @@ import { useState, useEffect } from "react";
 export default function ActiveJobs() {
   const router = useRouter();
   const [jobs, setJobs] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
@@ -53,6 +56,7 @@ export default function ActiveJobs() {
 
         const data = await response.json();
         setJobs(data);
+        setFilteredJobs(data);
       } catch (error) {
         setError("No active jobs");
       } finally {
@@ -62,6 +66,23 @@ export default function ActiveJobs() {
 
     fetchActiveJobs();
   }, []);
+
+  useEffect(() => {
+    // Filter jobs based on search term and status filter
+    const filtered = jobs.filter((job) => {
+      const matchesSearch =
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.location.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || job.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+
+    setFilteredJobs(filtered);
+  }, [searchTerm, statusFilter, jobs]);
 
   const handleMarkCompleted = async (job) => {
     const token = localStorage.getItem("token");
@@ -174,11 +195,54 @@ export default function ActiveJobs() {
             : "🔧 Jobs You Bid For"}
         </h2>
 
+        {/* Search and Filter Controls */}
+        <div className="mb-6 flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search jobs by title, description or location..."
+              className="w-full p-3 border border-gray-300 rounded-md pl-10 focus:outline-none focus:border-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <div className="absolute left-3 top-3 text-gray-400">🔍</div>
+          </div>
+
+          <div className="w-full md:w-64">
+            <select
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 bg-white"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              {userRole === "client" ? (
+                <>
+                  <option value="open">Open</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </>
+              ) : (
+                <>
+                  <option value="pending">Pending</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="completed">Completed</option>
+                </>
+              )}
+            </select>
+          </div>
+        </div>
+
         {loading && <p className="text-black">Loading active jobs...</p>}
         {error && <p className="text-red-500">{error}</p>}
 
+        {!loading && filteredJobs.length === 0 && (
+          <p className="text-gray-600 text-center py-8">
+            No jobs match your search criteria
+          </p>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs.map((job) => (
+          {filteredJobs.map((job) => (
             <div
               key={job.id}
               className="border p-4 rounded shadow-md bg-gray-100"
@@ -215,6 +279,29 @@ export default function ActiveJobs() {
                 {job.min_budget && job.max_budget
                   ? `$${job.min_budget} - $${job.max_budget}`
                   : "N/A"}
+              </p>
+              <p className="text-black">
+                <strong>Status:</strong>{" "}
+                <span
+                  className={`font-medium ${
+                    job.status === "completed"
+                      ? "text-green-600"
+                      : job.status === "in_progress" ||
+                        job.status === "accepted"
+                      ? "text-blue-600"
+                      : "text-orange-500"
+                  }`}
+                >
+                  {job.status === "in_progress"
+                    ? "In Progress"
+                    : job.status === "open"
+                    ? "Open"
+                    : job.status === "pending"
+                    ? "Pending"
+                    : job.status === "accepted"
+                    ? "Accepted"
+                    : "Completed"}
+                </span>
               </p>
               {userRole === "client" && job.status === "in_progress" && (
                 <button
