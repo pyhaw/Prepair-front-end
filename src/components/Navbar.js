@@ -12,12 +12,15 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState(null); // ✅ Track user ID
+  const [isClient, setIsClient] = useState(null);
 
   // ✅ Check login and admin status
   useEffect(() => {
     const verifyLoginAndAdmin = async () => {
       const token = localStorage.getItem("token");
       const id = localStorage.getItem("userId");
+      const role = localStorage.getItem("role");
+      setIsClient(role == "client");
 
       if (id) setUserId(parseInt(id));
       if (!token) {
@@ -99,24 +102,28 @@ const Navbar = () => {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
-          >
-            <Link href="/activeJobs">My Jobs</Link>
-          </Button>
+          {isLoggedIn && (
+            <Button
+              variant="ghost"
+              className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
+            >
+              <Link href="/activeJobs">My Jobs</Link>
+            </Button>
+          )}
           <Button
             variant="ghost"
             className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
           >
             <Link href="/discussion">Discussion</Link>
           </Button>
-          <Button
-            variant="ghost"
-            className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
-          >
-            <Link href="/requests">View Requests</Link>
-          </Button>
+          {isLoggedIn && (
+            <Button
+              variant="ghost"
+              className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5"
+            >
+              <Link href="/requests">View Requests</Link>
+            </Button>
+          )}
 
           {/* ✅ Chat Button */}
           {isLoggedIn && userId && (
@@ -152,9 +159,11 @@ const Navbar = () => {
             </Button>
           )}
 
-          <Button className="bg-green-500 text-white hover:bg-green-600 text-lg px-5 py-2.5">
-            <Link href="/make-request">Make a Request</Link>
-          </Button>
+          {isClient && (
+            <Button className="bg-green-500 text-white hover:bg-green-600 text-lg px-5 py-2.5">
+              <Link href="/make-request">Make a Request</Link>
+            </Button>
+          )}
           <Button className="bg-blue-500 text-white hover:bg-blue-600 text-lg px-5 py-2.5">
             <Link href="/chatbot">Access Pairy</Link>
           </Button>

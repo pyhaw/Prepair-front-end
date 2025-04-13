@@ -39,10 +39,10 @@ export default function EditRequest() {
     const formattedDate = dateFromParams
       ? new Date(dateFromParams).toISOString().split("T")[0]
       : "";
-  
+
     const encodedImages = searchParams.get("images");
     let parsedImages = [];
-  
+
     try {
       parsedImages = encodedImages
         ? JSON.parse(decodeURIComponent(encodedImages))
@@ -50,7 +50,7 @@ export default function EditRequest() {
     } catch (err) {
       console.error("❌ Failed to parse images from query params", err);
     }
-  
+
     // Set form data
     setFormData({
       id: searchParams.get("id") || "",
@@ -65,12 +65,11 @@ export default function EditRequest() {
       notify: searchParams.get("notify") === "true",
       jobStatus: searchParams.get("status") || "",
     });
-  
+
     // Set image state
     setImageFiles(parsedImages); // used when saving
     setImagePreviews(parsedImages); // used for UI preview
   }, []);
-  
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -117,8 +116,8 @@ export default function EditRequest() {
   };
 
   useEffect(() => {
-    console.log(imageFiles)
-  }, [imageFiles])
+    console.log(imageFiles);
+  }, [imageFiles]);
 
   const removeImage = (index) => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
@@ -141,7 +140,7 @@ export default function EditRequest() {
       images: imageFiles,
     };
 
-    console.log(imageFiles)
+    console.log(imageFiles);
 
     try {
       const response = await fetch(`${API_URL}/api/edit-postings`, {
@@ -386,7 +385,7 @@ export default function EditRequest() {
 
           <button
             onClick={() => router.back()}
-            className=" text-white px-6 py-3 rounded w-full border border-gray-400 hover:bg-gray-400"
+            className=" bg-gray-400 text-white px-6 py-3 rounded w-full border border-gray-400 hover:bg-gray-600"
           >
             Cancel
           </button>

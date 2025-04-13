@@ -201,6 +201,7 @@ export default function RequestDetails() {
   };
 
   const handleAcceptBid = async (bid) => {
+    if (!confirm("Do you want to accept job bid?")) return;
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`${API_URL}/api/accept-bids`, {
@@ -226,6 +227,7 @@ export default function RequestDetails() {
   };
 
   const handleCompleteBid = async (bid) => {
+    if (!confirm("Do you want to mark job request as completed?")) return;
     try {
       const token = localStorage.getItem("token");
 

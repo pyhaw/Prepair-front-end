@@ -15,6 +15,7 @@ export default function ActiveJobs() {
   const [userId, setUserId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [userToken, setUserToken] = useState(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
@@ -24,6 +25,7 @@ export default function ActiveJobs() {
         const token = localStorage.getItem("token");
         const userId = localStorage.getItem("userId");
         const role = localStorage.getItem("role");
+        setUserToken(token);
         setUserId(userId);
         setUserRole(role);
 
@@ -86,13 +88,22 @@ export default function ActiveJobs() {
 
   const handleMarkCompleted = async (job) => {
     const token = localStorage.getItem("token");
-
-    if (!job.accepted_bid_id) {
-      alert("No accepted bid found for this job.");
-      return;
-    }
+    if (!confirm("Do you want to mark job request as completed?")) return;
 
     try {
+      const response = await fetch(`${API_URL}/api/job/${job.id}/bids`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const [bid] = await response.json();
+      if (!response) {
+        alert("No accepted bid found for this job.");
+        return;
+      }
+
+      console.log(bid.id);
       const res = await fetch(`${API_URL}/api/complete-job`, {
         method: "POST",
         headers: {
@@ -100,7 +111,7 @@ export default function ActiveJobs() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          bidId: job.accepted_bid_id,
+          bidId: bid.id,
           jobId: job.id,
         }),
       });
@@ -115,8 +126,6 @@ export default function ActiveJobs() {
         setJobs((prevJobs) =>
           prevJobs.map((j) => (j.id === job.id ? updatedJob : j))
         );
-
-        setShowModalForJob(updatedJob);
       } else {
         alert(data.error || "Failed to complete job.");
       }
@@ -233,9 +242,50 @@ export default function ActiveJobs() {
         </div>
 
         {loading && <p className="text-black">Loading active jobs...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {!userToken ? (
+          <div className="py-16 text-center">
+            <div className="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-gray-100">
+              <span className="text-3xl">🔐</span>
+            </div>
+            <h3 className="text-xl font-medium text-gray-900 mb-2">
+              Please log in or create an account first.
+            </h3>
+            <button
+              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200"
+              onClick={() => router.push("/LoginPage")}
+            >
+              Go to Login Page
+            </button>
+          </div>
+        ) : (
+          error && (
+            <div className="py-16 text-center">
+              <div className="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-gray-100">
+                <span className="text-3xl">📋</span>
+              </div>
+              <h3 className="text-xl font-medium text-gray-900 mb-2">
+                No Jobs Found
+              </h3>
+              <p className="text-gray-500">
+                {userRole === "client"
+                  ? "You haven't created any job requests yet."
+                  : "You haven't bid on any jobs yet."}
+              </p>
+              <button
+                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200"
+                onClick={() =>
+                  router.push(
+                    userRole === "client" ? "/make-request" : "/requests"
+                  )
+                }
+              >
+                {userRole === "client" ? "Create a Request" : "Browse Jobs"}
+              </button>
+            </div>
+          )
+        )}
 
-        {!loading && filteredJobs.length === 0 && (
+        {!loading && filteredJobs.length === 0 && !error && (
           <p className="text-gray-600 text-center py-8">
             No jobs match your search criteria
           </p>
