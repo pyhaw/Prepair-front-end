@@ -108,7 +108,6 @@ export default function Requests() {
     }).toString();
     router.push(`/requests/details?${queryParams}`);
   };
-  
 
   return (
     <div className="flex flex-col min-h-screen">
