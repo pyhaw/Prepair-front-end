@@ -4,7 +4,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useStateManager } from "react-select";
 
 export default function Requests() {
   const router = useRouter();
