@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,40 +9,58 @@ import { Button } from "@/components/ui/button";
 const AdminNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null); // Track admin profile picture
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
 
-  // ✅ Check login status from BACKEND
+  // Check login status and fetch profile picture
   useEffect(() => {
-    const verifyLogin = async () => {
+    const verifyLoginAndFetchData = async () => {
       const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
 
-      if (!token) {
+      if (!token || !userId) {
         setIsLoggedIn(false);
         return;
       }
 
       try {
-        const response = await fetch("http://localhost:5001/api/auth/verify", {
+        // Verify token
+        const authResponse = await fetch("http://localhost:5001/api/auth/verify", {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.ok) {
+        if (authResponse.ok) {
           setIsLoggedIn(true);
+
+          // Fetch admin profile data to get profile picture
+          const profileResponse = await fetch(
+            `http://localhost:5001/api/userProfile/${userId}`,
+            {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          if (profileResponse.ok) {
+            const userData = await profileResponse.json();
+            setProfilePicture(userData.profilePicture || null); // Set profile picture URL
+          }
         } else {
           console.warn("Invalid token. Logging out...");
           localStorage.removeItem("token");
           setIsLoggedIn(false);
         }
       } catch (error) {
-        console.error("Error verifying token:", error);
+        console.error("Error verifying token or fetching profile:", error);
         setIsLoggedIn(false);
       }
     };
 
-    verifyLogin();
+    verifyLoginAndFetchData();
   }, []);
 
-  // ✅ Logout function
+  // Logout function
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -89,8 +106,7 @@ const AdminNavbar = () => {
 
         {/* Right Section: Navigation Buttons */}
         <div className="hidden md:flex items-center space-x-4">
-
-        <Button
+          <Button
             variant="ghost"
             className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
             asChild
@@ -98,6 +114,13 @@ const AdminNavbar = () => {
             <Link href="/admin/users">Users</Link>
           </Button>
 
+          <Button
+            variant="ghost"
+            className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
+            asChild
+          >
+            <Link href="/fixers">Fixers</Link>
+          </Button>
 
           <Button
             variant="ghost"
@@ -106,6 +129,7 @@ const AdminNavbar = () => {
           >
             <Link href="/admin/jobs">Jobs</Link>
           </Button>
+
           <Button
             variant="ghost"
             className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
@@ -114,36 +138,45 @@ const AdminNavbar = () => {
             <Link href="/discussion">Discussion</Link>
           </Button>
 
-          {isLoggedIn ? (
-            <>
-              {/* ✅ Show View Profile button when logged in */}
-              <Button
-                variant="ghost"
-                className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-                asChild
+          {/* Profile Picture Dropdown */}
+          {isLoggedIn && (
+            <div className="relative ml-auto">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center cursor-pointer"
               >
-                <Link href="/profilePage">View Profile</Link>
-              </Button>
+                {profilePicture ? (
+                  <img
+                    src={profilePicture}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-gray-500">👤</span>
+                )}
+              </button>
 
-              {/* ✅ Logout Button */}
-              <Button
-                onClick={handleLogout}
-                className="bg-red-500 text-white hover:bg-red-600 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-              >
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              {/* ✅ Register Button */}
-              <Button
-                variant="ghost"
-                className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-lg px-5 py-2.5 transition-all duration-200"
-                asChild
-              >
-                <Link href="/SignUpPage">Register</Link>
-              </Button>
-            </>
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                  <div className="py-2">
+                    <Link
+                      href="/profilePage"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      View Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -161,19 +194,28 @@ const AdminNavbar = () => {
         <div className="md:hidden bg-white px-6 py-4 shadow-inner">
           <div className="flex flex-col space-y-4">
             <Link
+              href="/admin/users"
+              className="text-gray-700 hover:text-gray-900 text-lg font-medium py-2"
+              onClick={() => setIsOpen(false)}
+            >
+              Users
+            </Link>
+            <Link
+              href="/admin/jobs"
+              className="text-gray-700 hover:text-gray-900 text-lg font-medium py-2"
+              onClick={() => setIsOpen(false)}
+            >
+              Jobs
+            </Link>
+            <Link
               href="/discussion"
               className="text-gray-700 hover:text-gray-900 text-lg font-medium py-2"
               onClick={() => setIsOpen(false)}
             >
               Discussion
             </Link>
-            <Link
-              href="/requests"
-              className="text-gray-700 hover:text-gray-900 text-lg font-medium py-2"
-              onClick={() => setIsOpen(false)}
-            >
-              Requests
-            </Link>
+
+            {isLoggedIn ? (
               <>
                 <Link
                   href="/profilePage"
@@ -189,7 +231,15 @@ const AdminNavbar = () => {
                   Logout
                 </button>
               </>
-            )
+            ) : (
+              <Link
+                href="/SignUpPage"
+                className="text-gray-700 hover:text-gray-900 text-lg font-medium py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Register
+              </Link>
+            )}
           </div>
         </div>
       )}
