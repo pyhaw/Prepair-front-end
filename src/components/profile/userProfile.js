@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
 import axios from "axios";
 
 const ProfilePage = () => {
@@ -27,6 +26,7 @@ const ProfilePage = () => {
     previousRole: "",
     duration: "",
     profilePicture: "",
+    newPassword: "", // Added newPassword field
   });
   const [message, setMessage] = useState(""); // State to manage success/error messages
   const [previewImage, setPreviewImage] = useState(null); // State to preview the uploaded image
@@ -56,7 +56,6 @@ const ProfilePage = () => {
           return;
         }
         setIsLoggedIn(true);
-
         // Fetch user profile data
         try {
           const profileResponse = await fetch(
@@ -129,7 +128,6 @@ const ProfilePage = () => {
       setMessage("Please select a valid image file.");
       return;
     }
-
     try {
       const response = await axios.post(CLOUDINARY_UPLOAD_URL, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -165,7 +163,6 @@ const ProfilePage = () => {
         },
         body: JSON.stringify(formData),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Error: ${response.status}`);
@@ -178,6 +175,12 @@ const ProfilePage = () => {
       setIsLoading(false);
     }
   };
+
+  const handleRemovePicture = () => {
+    setFormData((prev) => ({ ...prev, profilePicture: "" }));
+    setPreviewImage(null);
+  };
+
   // Show login message if user is not authenticated
   if (!isLoggedIn) {
     return (
@@ -201,7 +204,6 @@ const ProfilePage = () => {
   return (
     <section className="pt-32 text-center px-6">
       <h2 className="text-4xl font-bold text-gray-900">Profile Page</h2>
-
       {/* Display Success/Error Message */}
       {message && (
         <p
@@ -212,7 +214,6 @@ const ProfilePage = () => {
           {message}
         </p>
       )}
-
       {/* Profile Picture Section */}
       <div className="flex flex-col items-center mt-8">
         <label htmlFor="profilePicture" className="cursor-pointer">
@@ -237,8 +238,15 @@ const ProfilePage = () => {
           className="hidden"
         />
         <p className="text-sm text-gray-500 mt-2">Click to upload</p>
+        {formData.profilePicture && (
+          <button
+            onClick={handleRemovePicture}
+            className="mt-4 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
+          >
+            Remove Picture
+          </button>
+        )}
       </div>
-
       <form className="mt-8 max-w-xl mx-auto" onSubmit={handleSubmit}>
         <div className="profile-section">
           <h3 className="text-xl font-bold text-gray-800">
@@ -249,7 +257,7 @@ const ProfilePage = () => {
             name="username"
             value={formData.username}
             onChange={handleChange}
-            placeholder="username"
+            placeholder="Username"
             className="mt-4 p-3 w-full rounded-lg border border-gray-300 text-gray-700 placeholder-gray-400"
           />
           <input
@@ -352,6 +360,18 @@ const ProfilePage = () => {
             value={formData.duration}
             onChange={handleChange}
             placeholder="Duration"
+            className="mt-4 p-3 w-full rounded-lg border border-gray-300 text-gray-700 placeholder-gray-400"
+          />
+        </div>
+        {/* New Password Field */}
+        <div className="profile-section mt-6">
+          <h3 className="text-xl font-bold text-gray-800">Change Password</h3>
+          <input
+            type="password"
+            name="newPassword"
+            value={formData.newPassword}
+            onChange={handleChange}
+            placeholder="Leave blank if not changing"
             className="mt-4 p-3 w-full rounded-lg border border-gray-300 text-gray-700 placeholder-gray-400"
           />
         </div>
