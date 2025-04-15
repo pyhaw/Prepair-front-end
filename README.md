@@ -1,61 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Project Setup Guide
 
-## Getting Started
-The project uses Node.js, so you'll need to install the required packages. Depending on your package manager, run one of the following commands:
+This guide outlines the steps to install, configure, and run the frontend client for the **Prepair** web application.
+
+---
+
+## Prerequisites
+
+Ensure the following are installed on your local development environment:
+
+- [Node.js](https://nodejs.org/) (v14 or higher)
+- npm (included with Node.js)
+
+---
+
+## 1. Install Dependencies
+
+Navigate to the root directory of the frontend project and run:
 
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-
 ```
-This will install all necessary dependencies as specified in the package.json file.
+This installs all required packages listed in `package.json`.
 
-First, run the development server:
+## 2. Environment Configuration
+
+Create a `.env` file in the root directory and add the following environment variables:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=preset
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dqvbgqiex
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL=https://api.cloudinary.com/v1_1/dqvbgqiex/image/upload
 ```
+These variables are used for uploading images via Cloudinary.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 3. Install UI Dependencies
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-Install Additional Dependencies
-
-After the initial setup, install the additional dependencies required for UI components and functionality:
+Install the following additional dependencies used in the project:
 
 ```bash
-npm install @radix-ui/react-dropdown-menu shadcn-ui clsx lucide-react 
+npm install @radix-ui/react-dropdown-menu shadcn-ui clsx lucide-react
 ```
-if shadcn-ui is not recognized, install it globally:
+
+If shadcn-ui is not recognized, install it globally and initialise it with:
+
 ```bash
 npm install -g shadcn-ui
 npx shadcn-ui init
 ```
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## 4. Start the Frontend Server
+To run the application in development mode, use the following command:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+By default, the frontend will be available at:  
+http://localhost:3000
