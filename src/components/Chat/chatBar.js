@@ -39,7 +39,7 @@ export default function ChatBar({ currentUserId, setSelectedUser }) {
       });
 
       if (response.ok) {
-        toast.success(`Chat created with ${userData.username}!`);
+        toast.success(`Chat created!`);
 
         setSelectedUser({
           id: targetId,

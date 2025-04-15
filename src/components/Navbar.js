@@ -105,10 +105,10 @@ const Navbar = () => {
         <div className="flex items-center">
           <Link href="/">
             <Image
-              src="/FIF.png"
+              src="/images/FIF.jpg" // ✅ Remove "public"
               alt="Prepair Logo"
-              width={180}
-              height={60}
+              width={60}
+              height={40}
               priority
             />
           </Link>
@@ -147,9 +147,7 @@ const Navbar = () => {
             </Button>
           )}
           {/* Access Pairy Button */}
-          <Button
-            className="bg-blue-500 text-white hover:bg-blue-600 text-lg px-5 py-2.5"
-          >
+          <Button className="bg-blue-500 text-white hover:bg-blue-600 text-lg px-5 py-2.5">
             <Link href="/chatbot">Access Pairy</Link>
           </Button>
         </div>

@@ -4,10 +4,16 @@ import io from "socket.io-client";
 
 const socket = io("http://localhost:5001");
 
-export default function ChatRoom({ currentUserId, targetUserId, username, targetUsername }) {
+export default function ChatRoom({ currentUserId, username, selectedUser }) {
+  const targetUserId = selectedUser?.id;
+  const targetUsername = selectedUser?.name;
+  const targetAvatar = selectedUser?.avatar;
+
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [targetProfilePicture, setTargetProfilePicture] = useState(null);
+
   const messagesEndRef = useRef(null);
 
   const roomId = [currentUserId, targetUserId].sort().join("-");
@@ -16,10 +22,13 @@ export default function ChatRoom({ currentUserId, targetUserId, username, target
     socket.emit("join_room", roomId);
 
     const handleReceive = (data) => {
+      console.log("📥 Received socket message:", data);
       setMessages((prev) => [
         ...prev,
         {
-          ...data,
+          senderId: data.senderId,
+          recipientId: data.recipientId,
+          message: data.message,
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -31,13 +40,33 @@ export default function ChatRoom({ currentUserId, targetUserId, username, target
       scrollToBottom();
     };
 
+    const fetchTargetProfile = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5001/api/userProfile/${targetUserId}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          console.log("🧠 Fetched target profile:", data); // ← Add thi
+          setTargetProfilePicture(data.profilePicture || null);
+        }
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("chatMessageSent"));
+        }
+      } catch (err) {
+        console.error("Failed to fetch target profile picture:", err);
+      }
+    };
+
     const handleTyping = (data) => {
       if (data.senderId === targetUserId) {
         setIsTyping(true);
         setTimeout(() => setIsTyping(false), 3000);
       }
     };
-
+    socket.on("connect", () => {
+      console.log("✅ Connected to socket:", socket.id);
+    });
     socket.on("receive_message", handleReceive);
     socket.on("user_typing", handleTyping);
 
@@ -50,7 +79,9 @@ export default function ChatRoom({ currentUserId, targetUserId, username, target
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`http://localhost:5001/api/chat-history/${roomId}`);
+        const res = await fetch(
+          `http://localhost:5001/api/chat/chat-history/${roomId}`
+        );
         const data = await res.json();
 
         if (Array.isArray(data)) {
@@ -93,6 +124,7 @@ export default function ChatRoom({ currentUserId, targetUserId, username, target
     socket.emit("send_message", msgData);
     setMessage("");
     scrollToBottom();
+    window.dispatchEvent(new Event("chatMessageSent"));
   };
 
   const handleTyping = (e) => {
@@ -115,8 +147,16 @@ export default function ChatRoom({ currentUserId, targetUserId, username, target
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-6 py-3 bg-white border-b border-gray-200 flex items-center">
-        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-          {targetUsername?.charAt(0) || targetUserId.toString().charAt(0)}
+        <div className="w-10 h-10 mr-3 rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center font-semibold">
+          {targetAvatar?.startsWith("http") ? (
+            <img
+              src={targetAvatar}
+              alt="Avatar"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span>{targetAvatar || targetUsername?.charAt(0)}</span>
+          )}
         </div>
         <div>
           <h2 className="font-medium text-black">
@@ -145,7 +185,9 @@ export default function ChatRoom({ currentUserId, targetUserId, username, target
               return (
                 <div
                   key={idx}
-                  className={`mb-4 flex ${isSender ? "justify-end" : "justify-start"}`}
+                  className={`mb-4 flex ${
+                    isSender ? "justify-end" : "justify-start"
+                  }`}
                 >
                   <div className="max-w-xs lg:max-w-md">
                     <div

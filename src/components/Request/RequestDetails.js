@@ -141,6 +141,65 @@ export default function RequestDetails() {
     (bid) => String(bid.fixer_id) === String(userId)
   );
 
+  const handleMessageFixer = async (fixerId, fixerName) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in to message the fixer.");
+      return;
+    }
+
+    try {
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+
+      // Decode JWT token to get client info
+      const payloadBase64 = token.split(".")[1];
+      const base64 = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      const decoded = JSON.parse(jsonPayload);
+
+      const senderId = decoded.id || decoded.userId;
+      const senderUsername = decoded.name;
+
+      if (!senderId || !fixerId) {
+        console.error("❌ Missing sender or recipient ID.");
+        throw new Error("Missing IDs");
+      }
+
+      // Create chat room if not exists
+      const roomId = [senderId, fixerId].sort().join("-");
+      await fetch(`${API_URL}/api/chat/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user1_id: senderId, user2_id: fixerId }),
+      });
+
+      // Send message
+      const prefillMessage = `Hi I am ${senderUsername} and I would like to follow up on your bid.`;
+      await fetch(`${API_URL}/api/chat/save-message`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          room_id: roomId,
+          sender_id: senderId,
+          recipient_id: fixerId,
+          message: prefillMessage,
+        }),
+      });
+
+      window.dispatchEvent(new Event("chatMessageSent"));
+      router.push(`/chatPage?me=${senderId}&partner=${fixerId}`);
+    } catch (err) {
+      console.error("❌ Error messaging fixer:", err);
+      alert("Something went wrong while trying to message the fixer.");
+    }
+  };
+
   // Handle bid submission
   const handleSubmitBid = async (e) => {
     e.preventDefault();
@@ -757,8 +816,9 @@ export default function RequestDetails() {
                               <button
                                 className="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition duration-300"
                                 onClick={() =>
-                                  alert(
-                                    "Message bidder functionality to be implemented"
+                                  handleMessageFixer(
+                                    bid.fixer_id,
+                                    bid.fixer_name
                                   )
                                 }
                               >

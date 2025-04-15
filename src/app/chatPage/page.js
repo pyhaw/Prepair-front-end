@@ -8,12 +8,13 @@ import ChatLayout from "@/components/Chat/chatLayout";
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const currentUserId = parseInt(searchParams.get("me"));
-  const partnerId = searchParams.get("partner");
+  const partnerIdRaw = searchParams.get("partner");
+  const partnerId = partnerIdRaw ? parseInt(partnerIdRaw) : null;
 
   const [username, setUsername] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // ✅ Fetch actual username from backend
+  // ✅ Fetch logged-in user's username
   useEffect(() => {
     const fetchUsername = async () => {
       if (!currentUserId) return;
@@ -21,35 +22,35 @@ export default function ChatPage() {
       try {
         const res = await fetch(`http://localhost:5001/api/users/${currentUserId}`);
         const data = await res.json();
-        setUsername(data.username || `User${currentUserId}`);
+        setUsername(data.username || `User ${currentUserId}`);
       } catch (err) {
         console.error("❌ Failed to fetch username:", err);
-        setUsername(`User${currentUserId}`); // fallback
+        setUsername(`User ${currentUserId}`); // fallback
       }
     };
 
     fetchUsername();
   }, [currentUserId]);
 
-  // ✅ Handle pre-selected partner user from query
+  // ✅ Fetch preselected partner user
   useEffect(() => {
     const fetchPartnerDetails = async () => {
       if (!partnerId) return;
-  
+
       try {
         const res = await fetch(`http://localhost:5001/api/users/${partnerId}`);
         const data = await res.json();
-  
+
         setSelectedUser({
-          id: parseInt(partnerId),
+          id: partnerId,
           name: data.username || `User ${partnerId}`,
-          avatar: data.profilePicture || partnerId.charAt(0),
+          avatar: data.profilePicture || (data.username?.charAt(0) ?? "U"),
         });
       } catch (err) {
         console.error("❌ Failed to fetch partner user info:", err);
       }
     };
-  
+
     fetchPartnerDetails();
   }, [partnerId]);
 
