@@ -7,46 +7,52 @@ export default function ChatBar({ currentUserId, setSelectedUser }) {
 
   const createRoom = async () => {
     const targetId = parseInt(targetUserId);
-
+  
     if (!targetId || isNaN(targetId)) {
       toast.warning("Please enter a valid user ID.");
       return;
     }
-
+  
     if (targetId === currentUserId) {
       toast.warning("You can't chat with yourself.");
       return;
     }
-
+  
     try {
-      // ✅ Use your correct validation route
-      const userCheck = await fetch(
-        `http://localhost:5001/api/users/validate/${targetId}?currentUserId=${currentUserId}`
-      );
-
-      if (!userCheck.ok) {
-        toast.error("User not found.");
+      // ✅ Include token in header
+      const token = localStorage.getItem("token");
+  
+      const userRes = await fetch(`http://localhost:5001/api/userProfile/${targetId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!userRes.ok) {
+        toast.error("User not found or unauthorized.");
         return;
       }
-
-      const userData = await userCheck.json();
-
-      // ✅ Proceed to create chat room
+  
+      const userData = await userRes.json();
+  
       const response = await fetch("http://localhost:5001/api/chat/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ user1Id: currentUserId, user2Id: targetId }),
       });
-
+  
       if (response.ok) {
         toast.success(`Chat created!`);
-
+  
         setSelectedUser({
-          id: targetId,
-          name: userData.username || `User ${targetId}`,
+          id: userData.id,
+          name: userData.username,
           avatar: userData.profilePicture || userData.username?.charAt(0) || "U",
         });
-
+  
         setTargetUserId("");
       } else {
         toast.error("Failed to create chat.");
@@ -56,6 +62,8 @@ export default function ChatBar({ currentUserId, setSelectedUser }) {
       toast.error("Unexpected error occurred.");
     }
   };
+  
+  
 
   return (
     <>

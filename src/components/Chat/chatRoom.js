@@ -5,14 +5,14 @@ import io from "socket.io-client";
 const socket = io("http://localhost:5001");
 
 export default function ChatRoom({ currentUserId, username, selectedUser }) {
-  const targetUserId = selectedUser?.id;
-  const targetUsername = selectedUser?.name;
-  const targetAvatar = selectedUser?.avatar;
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [targetProfilePicture, setTargetProfilePicture] = useState(null);
+  const [targetUserId, setTargetUserId] = useState(selectedUser?.id);
+  const [targetUsername, setTargetUsername] = useState(selectedUser?.name);
+  const [targetAvatar, setTargetAvatar] = useState(selectedUser?.avatar);
 
   const messagesEndRef = useRef(null);
 
@@ -75,6 +75,13 @@ export default function ChatRoom({ currentUserId, username, selectedUser }) {
       socket.off("user_typing", handleTyping);
     };
   }, [roomId, targetUserId]);
+
+  useEffect(() => {
+    setTargetUserId(selectedUser?.id)
+    setTargetAvatar(selectedUser?.avatar)
+    setTargetUsername(selectedUser?.name)
+    console.log(selectedUser)
+  }, [selectedUser])
 
   useEffect(() => {
     const fetchHistory = async () => {
