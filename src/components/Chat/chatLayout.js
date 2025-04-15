@@ -6,7 +6,27 @@ import ChatRoom from "./chatRoom";
 
 export default function ChatLayout({ userId, selectedUser, setSelectedUser }) {
   const [username, setUsername] = useState("");
+  const [chatRefreshTrigger, setChatRefreshTrigger] = useState(0);
 
+  useEffect(() => {
+    const handleRefresh = () => {
+      setChatRefreshTrigger((prev) => prev + 1); // triggers ChatSidebar to refetch
+    };
+  
+    window.addEventListener("chatMessageSent", handleRefresh);
+  
+    return () => {
+      window.removeEventListener("chatMessageSent", handleRefresh);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedUser) {
+      // Auto-scroll or any other setup logic here if needed
+      console.log("🔁 ChatLayout received selectedUser:", selectedUser);
+    }
+  }, [selectedUser]);
+  
   useEffect(() => {
     const fetchUsername = async () => {
       if (!userId) return;
@@ -33,6 +53,7 @@ export default function ChatLayout({ userId, selectedUser, setSelectedUser }) {
           currentUserId={userId}
           selectedUser={selectedUser}
           setSelectedUser={setSelectedUser}
+          refreshTrigger={chatRefreshTrigger}
         />
       </div>
 
@@ -41,9 +62,8 @@ export default function ChatLayout({ userId, selectedUser, setSelectedUser }) {
         {selectedUser ? (
           <ChatRoom
             currentUserId={userId}
-            targetUserId={selectedUser?.id}
             username={username}
-            targetUsername={selectedUser?.name}
+            selectedUser={selectedUser}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center bg-white text-gray-500">
