@@ -111,6 +111,69 @@ export default function Requests() {
     router.push(`/requests/details?${queryParams}`);
   };
 
+  const handleMessageClient = async (clientId) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please log in to message the client.");
+      return;
+    }
+
+    try {
+      // Decode JWT token payload safely
+      const payloadBase64 = token.split(".")[1];
+      const base64 = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      const decodedPayload = JSON.parse(jsonPayload);
+
+      const senderId = decodedPayload.id || decodedPayload.userId;
+      const senderUsername = decodedPayload.name;
+
+      if (!senderId || !clientId) {
+        console.error("❌ handleMessageClient error: Missing IDs");
+        throw new Error("Missing sender or recipient ID.");
+      }
+
+      // Step 1: Create chat room if not exists
+      const roomId = [senderId, clientId].sort().join("-");
+
+      await fetch(`${API_URL}/api/chat/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user1_id: senderId,
+          user2_id: clientId,
+        }),
+      });
+
+      // Step 2: Send the prefilled message
+      const prefillMessage = `Hi I am ${senderUsername} and I would like to know more about the request.`;
+
+      await fetch(`${API_URL}/api/chat/save-message`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          room_id: roomId,
+          sender_id: senderId,
+          recipient_id: clientId,
+          message: prefillMessage,
+        }),
+      });
+      window.dispatchEvent(new Event("chatMessageSent"));
+      // Step 3: Redirect to chat
+      router.push(`/chatPage?me=${senderId}&partner=${clientId}`);
+    } catch (err) {
+      console.error("❌ handleMessageClient error:", err);
+      alert("Something went wrong while trying to message the client.");
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -252,12 +315,21 @@ export default function Requests() {
                       : "N/A"}
                   </p>
 
-                  <button
-                    className="mt-auto bg-orange-500 text-white px-4 py-2 rounded w-full block text-center hover:bg-orange-600"
-                    onClick={() => handleViewDetails(request)}
-                  >
-                    View Details
-                  </button>
+                  {/* ⬇️ Buttons Section */}
+                  <div className="mt-auto space-y-2">
+                    <button
+                      className="bg-orange-500 text-white px-4 py-2 rounded w-full block text-center hover:bg-orange-600"
+                      onClick={() => handleViewDetails(request)}
+                    >
+                      View Details
+                    </button>
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded w-full block text-center hover:bg-blue-700"
+                      onClick={() => handleMessageClient(request.client_id)}
+                    >
+                      💬 Message Client
+                    </button>
+                  </div>
                 </div>
               ) : null
             )
