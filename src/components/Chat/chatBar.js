@@ -7,52 +7,56 @@ export default function ChatBar({ currentUserId, setSelectedUser }) {
 
   const createRoom = async () => {
     const targetId = parseInt(targetUserId);
-  
+
     if (!targetId || isNaN(targetId)) {
       toast.warning("Please enter a valid user ID.");
       return;
     }
-  
+
     if (targetId === currentUserId) {
       toast.warning("You can't chat with yourself.");
       return;
     }
-  
+
     try {
       // ✅ Include token in header
       const token = localStorage.getItem("token");
-  
-      const userRes = await fetch(`http://localhost:5001/api/userProfile/${targetId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
+
+      const userRes = await fetch(
+        `http://localhost:5001/api/userProfile/${targetId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (!userRes.ok) {
         toast.error("User not found or unauthorized.");
         return;
       }
-  
+
       const userData = await userRes.json();
-  
+      console.log("Creating chat with:", { currentUserId, targetId });
       const response = await fetch("http://localhost:5001/api/chat/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ user1Id: currentUserId, user2Id: targetId }),
+        body: JSON.stringify({ user1_id: currentUserId, user2_id: targetId }),
       });
-  
+
       if (response.ok) {
         toast.success(`Chat created!`);
-  
+
         setSelectedUser({
           id: userData.id,
           name: userData.username,
-          avatar: userData.profilePicture || userData.username?.charAt(0) || "U",
+          avatar:
+            userData.profilePicture || userData.username?.charAt(0) || "U",
         });
-  
+
         setTargetUserId("");
       } else {
         toast.error("Failed to create chat.");
@@ -62,13 +66,13 @@ export default function ChatBar({ currentUserId, setSelectedUser }) {
       toast.error("Unexpected error occurred.");
     }
   };
-  
-  
 
   return (
     <>
       <div className="p-4 border-b border-orange-400">
-        <h2 className="text-xl font-semibold mb-3 text-black">New Conversation</h2>
+        <h2 className="text-xl font-semibold mb-3 text-black">
+          New Conversation
+        </h2>
         <div className="flex">
           <input
             type="number"
