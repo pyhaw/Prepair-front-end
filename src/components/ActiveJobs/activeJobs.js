@@ -195,9 +195,9 @@ export default function ActiveJobs() {
   };
 
   return (
-    <div>
+<div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-1 max-w-6xl mx-auto mt-32 p-6">
+      <div className="flex-1 max-w-6xl mx-auto mt-32 p-6 w-full">
         <h2 className="text-4xl font-bold mb-6 text-black">
           {userRole === "client"
             ? "📌 Your Job Requests"

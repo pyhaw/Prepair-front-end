@@ -7,7 +7,7 @@ export default function ChatSidebar({
   currentUserId,
   selectedUser,
   setSelectedUser,
-  refreshTrigger
+  refreshTrigger,
 }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +73,12 @@ export default function ChatSidebar({
       fetchUsername();
     }
   }, [refreshTrigger]);
+
+  useEffect(() => {
+    const listener = () => fetchChats();
+    window.addEventListener("chatMessageSent", listener);
+    return () => window.removeEventListener("chatMessageSent", listener);
+  }, []);
 
   return (
     <div className="flex-1 overflow-y-auto">
