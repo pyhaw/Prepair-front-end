@@ -165,9 +165,16 @@ export default function Requests() {
           message: prefillMessage,
         }),
       });
-      window.dispatchEvent(new Event("chatMessageSent"));
-      // Step 3: Redirect to chat
-      router.push(`/chatPage?me=${senderId}&partner=${clientId}`);
+
+      // Step 3: Redirect to chat page
+      const chatUrl = `/chatPage?me=${senderId}&partner=${clientId}`;
+      router.push(chatUrl);
+
+      // ✅ Step 4: Delay event to ensure ChatSidebar has mounted
+      setTimeout(() => {
+        window.dispatchEvent(new Event("chatMessageSent"));
+      }, 1000); // Delay slightly to ensure backend and frontend are ready
+      console.log("📣 Dispatching chatMessageSent event");
     } catch (err) {
       console.error("❌ handleMessageClient error:", err);
       alert("Something went wrong while trying to message the client.");
