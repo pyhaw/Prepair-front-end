@@ -146,6 +146,12 @@ const Navbar = () => {
               <Link href={`/chatPage?me=${userId}`}>💬 Chat</Link>
             </Button>
           )}
+          {/* Make Request Button */}
+          {isClient && (
+            <Button className="bg-green-500 text-white hover:bg-green-600 text-lg px-5 py-2.5">
+              <Link href="/make-request">Make a Request</Link>
+            </Button>
+          )}
           {/* Access Pairy Button */}
           <Button className="bg-blue-500 text-white hover:bg-blue-600 text-lg px-5 py-2.5">
             <Link href="/chatbot">Access Pairy</Link>
@@ -302,13 +308,6 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            <Link
-              href="/make-request"
-              className="text-orange-500 hover:text-orange-700 text-lg"
-              onClick={() => setIsOpen(false)}
-            >
-              Make a Request
-            </Link>
             <Link
               href="/chatbot"
               className="text-blue-500 hover:text-blue-700 text-lg"
