@@ -139,10 +139,7 @@ const Navbar = () => {
           )}
           {/* Chat Button */}
           {isLoggedIn && userId && (
-            <Button
-              variant="ghost"
-              className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5 flex items-center gap-2"
-            >
+            <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5 flex items-center gap-2">
               <Link href={`/chatPage?me=${userId}`}>💬 Chat</Link>
             </Button>
           )}
@@ -243,7 +240,10 @@ const Navbar = () => {
             >
               View Requests
             </Link>
-            {/* Mobile Chat Button */}
+            {/* ✅ New: Fixers page */}
+            <Link href="/fixers" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>
+              Our Fixers
+            </Link>
             {isLoggedIn && userId && (
               <Link
                 href={`/chatPage?me=${userId}`}
