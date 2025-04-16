@@ -12,9 +12,9 @@ export default function ChatLayout({ userId, selectedUser, setSelectedUser }) {
     const handleRefresh = () => {
       setChatRefreshTrigger((prev) => prev + 1); // triggers ChatSidebar to refetch
     };
-  
+
     window.addEventListener("chatMessageSent", handleRefresh);
-  
+
     return () => {
       window.removeEventListener("chatMessageSent", handleRefresh);
     };
@@ -26,13 +26,13 @@ export default function ChatLayout({ userId, selectedUser, setSelectedUser }) {
       console.log("🔁 ChatLayout received selectedUser:", selectedUser);
     }
   }, [selectedUser]);
-  
+
   useEffect(() => {
     const fetchUsername = async () => {
       if (!userId) return;
       try {
         const res = await fetch(
-          `http://localhost:5001/api/users/profile/${userId}`
+          `http://localhost:5001/api/userProfile/${userId}`
         );
         const data = await res.json();
         setUsername(data.username || `User ${userId}`);
