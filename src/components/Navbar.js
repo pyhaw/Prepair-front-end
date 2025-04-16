@@ -115,7 +115,7 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center">
+        <div className="hidden md:flex items-center space-x-4">
           {/* Fixers Button */}
           <Button
             variant="ghost"
@@ -144,6 +144,11 @@ const Navbar = () => {
               className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5 flex items-center gap-2"
             >
               <Link href={`/chatPage?me=${userId}`}>💬 Chat</Link>
+            </Button>
+          )}
+          {isClient && (
+            <Button className="bg-green-500 text-white hover:bg-green-600 text-lg px-5 py-2.5">
+              <Link href="/make-request">Make a Request</Link>
             </Button>
           )}
           {/* Access Pairy Button */}
