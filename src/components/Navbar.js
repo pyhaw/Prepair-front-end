@@ -11,9 +11,8 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [userId, setUserId] = useState(null); // ✅ Track user ID
+  const [userId, setUserId] = useState(null);
 
-  // ✅ Check login and admin status
   useEffect(() => {
     const verifyLoginAndAdmin = async () => {
       const token = localStorage.getItem("token");
@@ -55,7 +54,6 @@ const Navbar = () => {
     verifyLoginAndAdmin();
   }, []);
 
-  // ✅ Logout
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -81,13 +79,7 @@ const Navbar = () => {
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/">
-            <Image
-              src="/FIF.png"
-              alt="Prepair Logo"
-              width={180}
-              height={60}
-              priority
-            />
+            <Image src="/FIF.png" alt="Prepair Logo" width={180} height={60} priority />
           </Link>
         </div>
 
@@ -102,13 +94,13 @@ const Navbar = () => {
           <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5">
             <Link href="/requests">View Requests</Link>
           </Button>
+          {/* ✅ New: Fixers page */}
+          <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5">
+            <Link href="/fixers">Our Fixers</Link>
+          </Button>
 
-          {/* ✅ Chat Button */}
           {isLoggedIn && userId && (
-            <Button
-              variant="ghost"
-              className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5 flex items-center gap-2"
-            >
+            <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5 flex items-center gap-2">
               <Link href={`/chatPage?me=${userId}`}>💬 Chat</Link>
             </Button>
           )}
@@ -157,8 +149,10 @@ const Navbar = () => {
             <Link href="/requests" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>
               View Requests
             </Link>
-
-            {/* ✅ Mobile Chat Button */}
+            {/* ✅ New: Fixers page */}
+            <Link href="/fixers" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>
+              Our Fixers
+            </Link>
             {isLoggedIn && userId && (
               <Link
                 href={`/chatPage?me=${userId}`}
@@ -183,11 +177,12 @@ const Navbar = () => {
                 Register
               </Link>
             )}
+
             <Link href="/make-request" className="text-orange-500 hover:text-orange-700 text-lg" onClick={() => setIsOpen(false)}>
               Make a Request
             </Link>
             <Link href="/chatbot" className="text-blue-500 hover:text-blue-700 text-lg" onClick={() => setIsOpen(false)}>
-              Acess Pairy
+              Access Pairy
             </Link>
             {!isLoggedIn && (
               <Link href="/LoginPage" className="text-gray-700 hover:text-gray-900 text-lg" onClick={() => setIsOpen(false)}>
