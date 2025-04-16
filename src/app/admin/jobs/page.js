@@ -1,11 +1,12 @@
 import Jobs from "@/components/Admin/Jobs";
 import AdminNavbar from "@/components/Admin/AdminNavBar";
-
-export default function ChatPage() {
+import Footer from "@/components/Footer";
+export default function AdminJobs() {
   return (
     <div>
       <AdminNavbar />
       <Jobs />
+      <Footer/>
     </div>
   );
 }

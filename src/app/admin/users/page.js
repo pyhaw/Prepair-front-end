@@ -1,11 +1,12 @@
 import AllUsers from "@/components/Admin/AllUsers";
 import AdminNavbar from "@/components/Admin/AdminNavBar";
-
-export default function ChatPage() {
+import Footer from "@/components/Footer";
+export default function AdminUsers() {
   return (
     <div>
       <AdminNavbar />
       <AllUsers />
+      <Footer />
     </div>
   );
 }

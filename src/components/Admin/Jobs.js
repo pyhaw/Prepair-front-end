@@ -1,6 +1,5 @@
 "use client";
 
-import Footer from "@/components/Footer";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 
@@ -334,7 +333,6 @@ export default function AllJobPostings() {
           )}
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

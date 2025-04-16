@@ -105,7 +105,7 @@ const Navbar = () => {
         <div className="flex items-center">
           <Link href="/">
             <Image
-              src="/FIF.png"
+              src="/images/FIF.jpg"
               alt="Prepair Logo"
               width={180}
               height={60}
@@ -115,7 +115,7 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center">
           {/* Fixers Button */}
           <Button
             variant="ghost"

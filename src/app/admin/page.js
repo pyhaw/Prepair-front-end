@@ -2,7 +2,7 @@
 import Navbar from "@/components/Navbar";
 import ForgotPassword from "@/components/ForgotPassword/forgotPassword";
 
-export default function forgotPasswordPage() {
+export default function AdminPage() {
   return (
     <div>
       <Navbar />
