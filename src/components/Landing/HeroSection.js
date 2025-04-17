@@ -36,10 +36,10 @@ export default function HeroSection() {
         {/* Hero Image or Illustration */}
         <div className="mt-12">
           <Image
-            src="/images/hero-placeholder.png"
+            src="/images/PREPAIR_PICKS.png"
             alt="Platform demo"
-            width={800}
-            height={500}
+            width={400}
+            height={400}
             className="rounded-2xl shadow-xl mx-auto"
           />
         </div>
