@@ -151,6 +151,7 @@ export default function ActiveJobs() {
       ownerId: userId, // include owner id
       status: job.status,
       date: job.date,
+      images: encodeURIComponent(JSON.stringify(job.images || [])),
     }).toString();
 
     router.push(`/requests/details?${queryParams}`);
@@ -298,6 +299,22 @@ export default function ActiveJobs() {
               key={job.id}
               className="border p-4 rounded shadow-md bg-gray-100"
             >
+              <div className="overflow-x-auto whitespace-nowrap flex gap-2 mb-3">
+                {job.images && job.images.length > 0 ? (
+                  job.images.map((url, index) => (
+                    <img
+                      key={index}
+                      src={url}
+                      alt={`image-${index}`}
+                      className="w-32 h-32 object-cover rounded border"
+                    />
+                  ))
+                ) : (
+                  <div className="w-full h-32 flex items-center justify-center text-gray-400 border rounded">
+                    No image
+                  </div>
+                )}
+              </div>
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-black">{job.title}</h3>
 
