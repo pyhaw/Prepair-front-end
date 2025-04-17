@@ -11,11 +11,11 @@ export default function FixersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const DEFAULT_PROFILE_EMOJI = "👤";
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
   const handleMessageFixer = async (fixerId, fixerUsername) => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -24,7 +24,6 @@ export default function FixersPage() {
     }
 
     try {
-      // Decode JWT token
       const payloadBase64 = token.split(".")[1];
       const base64 = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
       const jsonPayload = decodeURIComponent(
@@ -136,12 +135,21 @@ export default function FixersPage() {
                 key={fixer.id}
                 className="border p-4 rounded shadow-md bg-gray-100"
               >
-                <img
-                  src={fixer.profilePicture || "/default-avatar.png"}
-                  alt={fixer.name || fixer.username}
-                  className="w-24 h-24 rounded-full mx-auto object-cover"
-                />
-                <h3 className="text-xl font-bold text-center text-black mt-4">
+                <div className="flex justify-center mb-4">
+                  {fixer.profilePicture ? (
+                    <img
+                      src={fixer.profilePicture}
+                      alt="Profile"
+                      className="w-24 h-24 aspect-square rounded-full object-cover bg-gray-200"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 aspect-square rounded-full bg-gray-200 flex items-center justify-center text-4xl">
+                      {DEFAULT_PROFILE_EMOJI}
+                    </div>
+                  )}
+                </div>
+
+                <h3 className="text-xl font-bold text-center text-black">
                   {fixer.name || fixer.username}
                 </h3>
                 <p className="text-center text-black text-sm">
@@ -157,7 +165,9 @@ export default function FixersPage() {
                   </button>
                   <button
                     className="bg-blue-500 text-white px-4 py-2 rounded w-full hover:bg-blue-600"
-                    onClick={() => handleMessageFixer(fixer.id, fixer.username)}
+                    onClick={() =>
+                      handleMessageFixer(fixer.id, fixer.username)
+                    }
                   >
                     Message Fixer
                   </button>
