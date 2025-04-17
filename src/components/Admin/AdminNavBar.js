@@ -11,13 +11,14 @@ const AdminNavbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null); // Track admin profile picture
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
+  const [userId, setUserId] = useState(null);
 
   // Check login status and fetch profile picture
   useEffect(() => {
     const verifyLoginAndFetchData = async () => {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
-
+      setUserId(userId);
       if (!token || !userId) {
         setIsLoggedIn(false);
         return;
@@ -25,10 +26,13 @@ const AdminNavbar = () => {
 
       try {
         // Verify token
-        const authResponse = await fetch("http://localhost:5001/api/auth/verify", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const authResponse = await fetch(
+          "http://localhost:5001/api/auth/verify",
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (authResponse.ok) {
           setIsLoggedIn(true);
@@ -95,10 +99,10 @@ const AdminNavbar = () => {
         <div className="flex items-center">
           <Link href="/">
             <Image
-              src="/FIF.png"
+              src="/images/FIF.jpg" // ✅ Remove "public"
               alt="Prepair Logo"
-              width={180}
-              height={60}
+              width={60}
+              height={40}
               priority
             />
           </Link>
@@ -113,6 +117,16 @@ const AdminNavbar = () => {
           >
             <Link href="/admin/users">Users</Link>
           </Button>
+
+          {userId && (
+            <Button
+              variant="ghost"
+              className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 text-lg px-5 py-2.5 flex items-center gap-2"
+              asChild
+            >
+              <Link href={`/chatPage?me=${userId}`}>💬 Chat</Link>
+            </Button>
+          )}
 
           <Button
             variant="ghost"

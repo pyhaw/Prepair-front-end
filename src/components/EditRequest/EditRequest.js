@@ -156,7 +156,7 @@ export default function EditRequest() {
       if (!response.ok) {
         throw new Error(data.error || "Failed to submit request");
       }
-      router.push(`/activeJobs`);
+      router.push(`/requests`);
     } catch (error) {
       setMessage(error.message);
     }

@@ -48,7 +48,7 @@ export default function ChatLayout({ userId, selectedUser, setSelectedUser }) {
     <div className="flex pt-[105px] min-h-screen bg-white text-black">
       {/* Sidebar */}
       <div className="w-80 border-r border-gray-200 flex flex-col">
-        <ChatBar currentUserId={userId} setSelectedUser={setSelectedUser} />
+        {/* <ChatBar currentUserId={userId} setSelectedUser={setSelectedUser} /> */}
         <ChatSidebar
           currentUserId={userId}
           selectedUser={selectedUser}
