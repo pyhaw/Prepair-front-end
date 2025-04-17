@@ -42,11 +42,13 @@ export default function PostDetails() {
   const [editingReplyContent, setEditingReplyContent] = useState("");
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-  const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const CLOUDINARY_UPLOAD_PRESET =
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
   const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
 
   const [currentUserId, setCurrentUserId] = useState(null);
-  const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+  const role =
+    typeof window !== "undefined" ? localStorage.getItem("role") : null;
 
   useEffect(() => {
     const storedId = localStorage.getItem("userId");
@@ -70,7 +72,9 @@ export default function PostDetails() {
         setEditImageFiles(data.post.images || []);
         setEditImagePreviews(data.post.images || []);
 
-        const repliesRes = await fetch(`${API_URL}/api/posts/${postId}/replies`);
+        const repliesRes = await fetch(
+          `${API_URL}/api/posts/${postId}/replies`
+        );
         if (repliesRes.ok) {
           const repliesData = await repliesRes.json();
           setReplies(repliesData.replies || []);
@@ -78,9 +82,12 @@ export default function PostDetails() {
 
         const token = localStorage.getItem("token");
         if (token) {
-          const votesRes = await fetch(`${API_URL}/api/posts/${postId}/user-votes`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const votesRes = await fetch(
+            `${API_URL}/api/posts/${postId}/user-votes`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           if (votesRes.ok) {
             const votesData = await votesRes.json();
             setUserVotes(votesData.votes || {});
@@ -174,9 +181,11 @@ export default function PostDetails() {
         );
       }
 
+      const voteKey = itemType === "post" ? "post" : `reply_${itemId}`;
+      const currentVote = userVotes[voteKey];
       setUserVotes({
         ...userVotes,
-        [itemType === "post" ? "post" : `reply_${itemId}`]: voteType,
+        [voteKey]: currentVote === voteType ? null : voteType,
       });
     } catch (err) {
       setError(err.message);
@@ -295,11 +304,13 @@ export default function PostDetails() {
         }
       } catch (error) {
         console.error("Error uploading file:", error);
-        setUploadMessage("Error uploading one or more images. Please try again.");
+        setUploadMessage(
+          "Error uploading one or more images. Please try again."
+        );
       }
     }
 
-    console.log(uploadedUrls)
+    console.log(uploadedUrls);
 
     // Update state with the new image URLs.
     setEditImagePreviews((prev) => [...prev, ...uploadedUrls]);
@@ -331,7 +342,7 @@ export default function PostDetails() {
       });
       if (!res.ok) throw new Error("Update failed");
       const updated = await res.json();
-      console.log(updated)
+      console.log(updated);
       setPost(updated.post);
       setIsEditingPost(false);
     } catch (err) {
@@ -410,7 +421,9 @@ export default function PostDetails() {
                   <Button variant="ghost" onClick={handlePostEditToggle}>
                     <Edit3 size={20} />
                   </Button>
-                  <Button variant="ghost" onClick={handlePostDelete}>Delete</Button>
+                  <Button variant="ghost" onClick={handlePostDelete}>
+                    Delete
+                  </Button>
                 </div>
               )}
             </>
