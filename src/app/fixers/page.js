@@ -105,10 +105,9 @@ export default function FixersPage() {
   );
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-
-      <div className="max-w-6xl mx-auto mt-32 p-6">
+      <div className="flex-1 max-w-6xl mx-auto mt-32 p-6 w-full">
         <h2 className="text-4xl font-bold mb-6 text-black">🔧 Our Fixers</h2>
 
         <div className="mb-6">
@@ -165,9 +164,7 @@ export default function FixersPage() {
                   </button>
                   <button
                     className="bg-blue-500 text-white px-4 py-2 rounded w-full hover:bg-blue-600"
-                    onClick={() =>
-                      handleMessageFixer(fixer.id, fixer.username)
-                    }
+                    onClick={() => handleMessageFixer(fixer.id, fixer.username)}
                   >
                     Message Fixer
                   </button>

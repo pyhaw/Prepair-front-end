@@ -136,6 +136,7 @@ export default function ActiveJobs() {
   };
 
   const handleViewDetails = (job) => {
+    console.log(job.date);
     const userId = localStorage.getItem("userId");
     // Pass the ownerId along with other job details
     const queryParams = new URLSearchParams({
@@ -195,7 +196,7 @@ export default function ActiveJobs() {
   };
 
   return (
-<div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <div className="flex-1 max-w-6xl mx-auto mt-32 p-6 w-full">
         <h2 className="text-4xl font-bold mb-6 text-black">

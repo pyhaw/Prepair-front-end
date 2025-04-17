@@ -21,7 +21,6 @@ export default function RateFixerModal({ fixer, jobId, onClose }) {
         body: JSON.stringify({
           fixer_id: fixer.id,
           rating,
-          comment,
         }),
       });
 
@@ -61,13 +60,7 @@ export default function RateFixerModal({ fixer, jobId, onClose }) {
                 </button>
               ))}
             </div>
-            <textarea
-              className="w-full border rounded p-2 mb-4"
-              rows="3"
-              placeholder="Leave a comment (optional)"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
+
             {errorMsg && (
               <div className="text-red-500 mb-2 text-sm">{errorMsg}</div>
             )}
